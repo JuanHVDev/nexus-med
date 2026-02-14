@@ -1,8 +1,4 @@
-export default function Home()
+export default function HomePage()
 {
-  return (
-    <div>
-      <h1>Gestor HC</h1>
-    </div>
-  );
+  return null
 }
