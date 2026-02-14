@@ -7,19 +7,433 @@ datasource db {
   provider = "postgresql"
 }
 
+// ============ ENUMS ============
+enum Role {
+  ADMIN
+  DOCTOR
+  NURSE
+  RECEPTIONIST
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum BloodType {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  PARTIAL
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+  CHECK
+}
+
+// ============ CORE MODELS ============
+
+model Clinic {
+  id       BigInt  @id @default(autoincrement())
+  name     String
+  rfc      String  @unique
+  address  String?
+  phone    String?
+  email    String?
+  isActive Boolean @default(true)
+
+  users             User[]
+  patients          Patient[]
+  appointments      Appointment[]
+  medicalNotes      MedicalNote[]
+  invoices          Invoice[]
+  services          Service[]
+  serviceCategories ServiceCategory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([rfc])
+  @@index([isActive])
+  @@map("clinics")
+}
+
 model User {
-  id            String    @id
+  id            String  @id
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String  @unique
+  emailVerified Boolean @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+
+  role          Role    @default(DOCTOR)
+  specialty     String?
+  licenseNumber String?
+  phone         String?
+  isActive      Boolean @default(true)
+
+  clinicId BigInt?
+  clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+
   accounts      Account[]
   sessions      Session[]
+  appointments  Appointment[]  @relation("DoctorAppointments")
+  medicalNotes  MedicalNote[]
+  prescriptions Prescription[]
+  invoices      Invoice[]
 
-  @@map("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
 }
+
+// ============ PATIENT MODELS ============
+
+model Patient {
+  id       BigInt @id @default(autoincrement())
+  clinicId BigInt
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  firstName  String
+  lastName   String
+  middleName String?
+  curp       String?
+
+  birthDate DateTime
+  gender    Gender
+  bloodType BloodType?
+
+  email   String?
+  phone   String?
+  mobile  String?
+  address String?
+  city    String?
+  state   String?
+  zipCode String?
+
+  isActive Boolean @default(true)
+  notes    String?
+
+  medicalHistory    MedicalHistory?
+  emergencyContacts EmergencyContact[]
+  appointments      Appointment[]
+  medicalNotes      MedicalNote[]
+  prescriptions     Prescription[]
+  invoices          Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clinicId, curp])
+  @@index([clinicId])
+  @@index([clinicId, lastName])
+  @@index([clinicId, curp])
+  @@index([phone])
+  @@index([email])
+  @@index([isActive])
+  @@map("patients")
+}
+
+model MedicalHistory {
+  id        BigInt  @id @default(autoincrement())
+  patientId BigInt  @unique
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  allergies          String[] @default([])
+  currentMedications String[] @default([])
+  chronicDiseases    String[] @default([])
+  surgeries          String[] @default([])
+  familyHistory      String?
+
+  smoking  Boolean @default(false)
+  alcohol  Boolean @default(false)
+  drugs    Boolean @default(false)
+  exercise String?
+  diet     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("medical_histories")
+}
+
+model EmergencyContact {
+  id        BigInt  @id @default(autoincrement())
+  patientId BigInt
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  name      String
+  relation  String
+  phone     String
+  email     String?
+  isPrimary Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId])
+  @@map("emergency_contacts")
+}
+
+// ============ APPOINTMENT MODELS ============
+
+model Appointment {
+  id       BigInt @id @default(autoincrement())
+  clinicId BigInt
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  patientId BigInt
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId String
+  doctor   User   @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  startTime DateTime
+  endTime   DateTime
+  status    AppointmentStatus @default(SCHEDULED)
+
+  reason String?
+  notes  String?
+
+  medicalNote MedicalNote?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([clinicId, startTime])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([doctorId, startTime])
+  @@index([status])
+  @@map("appointments")
+}
+
+// ============ MEDICAL RECORDS ============
+
+model MedicalNote {
+  id       BigInt @id @default(autoincrement())
+  clinicId BigInt
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  patientId BigInt
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId String
+  doctor   User   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  appointmentId BigInt?      @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  chiefComplaint String
+  currentIllness String?
+  vitalSigns     Json?
+  physicalExam   String?
+  diagnosis      String
+  prognosis      String?
+  treatment      String?
+  notes          String?
+
+  prescriptions Prescription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([patientId])
+  @@index([patientId, createdAt])
+  @@index([doctorId])
+  @@map("medical_notes")
+}
+
+model Prescription {
+  id BigInt @id @default(autoincrement())
+
+  patientId BigInt
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId String
+  doctor   User   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  medicalNoteId BigInt
+  medicalNote   MedicalNote @relation(fields: [medicalNoteId], references: [id], onDelete: Cascade)
+
+  medications  Json
+  instructions String?
+
+  issueDate  DateTime  @default(now())
+  validUntil DateTime?
+
+  digitalSignature String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([medicalNoteId])
+  @@index([issueDate])
+  @@map("prescriptions")
+}
+
+// ============ BILLING MODELS ============
+
+model ServiceCategory {
+  id       BigInt @id @default(autoincrement())
+  clinicId BigInt
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  color       String?
+  sortOrder   Int     @default(0)
+
+  services Service[]
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([clinicId, sortOrder])
+  @@map("service_categories")
+}
+
+model Service {
+  id       BigInt @id @default(autoincrement())
+  clinicId BigInt
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  categoryId BigInt?
+  category   ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  name        String
+  description String?
+  basePrice   Decimal @db.Decimal(10, 2)
+  duration    Int?
+
+  isActive Boolean @default(true)
+
+  invoiceItems InvoiceItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([clinicId, categoryId])
+  @@index([isActive])
+  @@map("services")
+}
+
+model Invoice {
+  id       BigInt @id @default(autoincrement())
+  clinicId BigInt
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  patientId BigInt
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  clinicInvoiceNumber String
+
+  issuedById String
+  issuedBy   User   @relation(fields: [issuedById], references: [id], onDelete: Cascade)
+
+  issueDate DateTime  @default(now())
+  dueDate   DateTime?
+
+  subtotal Decimal @db.Decimal(10, 2)
+  tax      Decimal @default(0) @db.Decimal(10, 2)
+  discount Decimal @default(0) @db.Decimal(10, 2)
+  total    Decimal @db.Decimal(10, 2)
+
+  status InvoiceStatus @default(PENDING)
+
+  notes String?
+
+  items    InvoiceItem[]
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clinicId, clinicInvoiceNumber])
+  @@index([clinicId])
+  @@index([patientId])
+  @@index([status])
+  @@index([issueDate])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id        BigInt  @id @default(autoincrement())
+  invoiceId BigInt
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  serviceId BigInt?
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  description String
+  quantity    Int     @default(1)
+  unitPrice   Decimal @db.Decimal(10, 2)
+  discount    Decimal @default(0) @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
+  @@index([serviceId])
+  @@map("invoice_items")
+}
+
+model Payment {
+  id        BigInt  @id @default(autoincrement())
+  invoiceId BigInt
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  amount    Decimal       @db.Decimal(10, 2)
+  method    PaymentMethod
+  reference String?
+  notes     String?
+
+  paymentDate DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
+  @@index([paymentDate])
+  @@map("payments")
+}
+
+// ============ BETTER-AUTH MODELS ============
 
 model Session {
   id        String   @id
