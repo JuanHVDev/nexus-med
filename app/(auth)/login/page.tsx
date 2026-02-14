@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-export default function LoginPage()
+function LoginForm()
 {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -22,10 +22,7 @@ export default function LoginPage()
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   })
   const onSubmit = async (data: LoginFormData) =>
   {
@@ -55,6 +52,44 @@ export default function LoginPage()
     }
   }
   return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Correo electrónico</Label>
+        <Input id="email" type="email" placeholder="doctor@clinica.com" {...register('email')} aria-invalid={errors.email ? 'true' : 'false'} />
+        {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Contraseña</Label>
+        <Input id="password" type="password" {...register('password')} aria-invalid={errors.password ? 'true' : 'false'} />
+        {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+      </div>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+      </Button>
+    </form>
+  )
+}
+function LoginFormFallback()
+{
+  return (
+    <form className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Correo electrónico</Label>
+        <Input id="email" type="email" placeholder="doctor@clinica.com" disabled />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Contraseña</Label>
+        <Input id="password" type="password" disabled />
+      </div>
+      <Button type="submit" className="w-full" disabled>
+        Cargando...
+      </Button>
+    </form>
+  )
+}
+export default function LoginPage()
+{
+  return (
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Iniciar Sesión</CardTitle>
@@ -63,50 +98,12 @@ export default function LoginPage()
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Correo electrónico</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="doctor@clinica.com"
-              {...register('email')}
-              aria-invalid={errors.email ? 'true' : 'false'}
-            />
-            {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              id="password"
-              type="password"
-              {...register('password')}
-              aria-invalid={errors.password ? 'true' : 'false'}
-            />
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
-            )}
-          </div>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </Button>
-        </form>
-
+        <Suspense fallback={<LoginFormFallback />}>
+          <LoginForm />
+        </Suspense>
         <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p>¿No tienes cuenta?{' '}
-            <a href="/register" className="text-primary hover:underline">
-              Regístrate aquí
-            </a>
-          </p>
-          <p className="mt-2 text-xs">
-            Demo: admin@clinica.com / Admin123!
-          </p>
+          <p>¿No tienes cuenta? <a href="/register" className="text-primary hover:underline">Regístrate aquí</a></p>
+          <p className="mt-2 text-xs">Demo: admin@clinica.com / Admin123!</p>
         </div>
       </CardContent>
     </Card>
