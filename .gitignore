@@ -44,5 +44,8 @@ next-env.d.ts
 PLAN.md
 /generated/prisma
 
+# backups
+*.backup
+
 .vercel
 .env*.local
