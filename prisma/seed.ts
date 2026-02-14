@@ -207,7 +207,7 @@ async function main()
     console.log(account)
   } catch (error)
   {
-    console.log('Error creating admin user:', JSON.stringify(error.message, null, 2))
+    console.log('Error creating admin user:', error instanceof Error ? error.message : String(error))
   }
   // Actualizar el summary al final:
   console.log('\n✅ Seed completed successfully!')
