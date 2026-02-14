@@ -1,5 +1,7 @@
-import { PrismaClient, Role, Gender, BloodType, AppointmentStatus, InvoiceStatus, PaymentMethod } from '../generated/prisma/client'
+import { hashPassword } from 'better-auth/crypto'
+import { PrismaClient, Role, Gender, BloodType } from '../generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
+import 'dotenv/config'
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -12,8 +14,11 @@ async function main()
   console.log('Starting database seed...')
 
   // 1. Create Clinic
-  const clinic = await prisma.clinic.create({
-    data: {
+  // 1. Create Clinic
+  const clinic = await prisma.clinic.upsert({
+    where: { rfc: 'CME123456ABC' },
+    update: {},
+    create: {
       name: 'Clínica Médica Ejemplo',
       rfc: 'CME123456ABC',
       address: 'Av. Principal 123, Ciudad de México',
@@ -24,14 +29,26 @@ async function main()
   console.log(`Created clinic: ${clinic.name}`)
 
   // 2. Create Service Categories
-  const categories = await prisma.serviceCategory.createMany({
-    data: [
-      { clinicId: clinic.id, name: 'Consultas', color: '#3b82f6', sortOrder: 1 },
-      { clinicId: clinic.id, name: 'Procedimientos', color: '#10b981', sortOrder: 2 },
-      { clinicId: clinic.id, name: 'Laboratorio', color: '#f59e0b', sortOrder: 3 },
-      { clinicId: clinic.id, name: 'Imagenología', color: '#8b5cf6', sortOrder: 4 },
-    ],
-  })
+  // 2. Create Service Categories
+  const categoriesData = [
+    { name: 'Consultas', color: '#3b82f6', sortOrder: 1 },
+    { name: 'Procedimientos', color: '#10b981', sortOrder: 2 },
+    { name: 'Laboratorio', color: '#f59e0b', sortOrder: 3 },
+    { name: 'Imagenología', color: '#8b5cf6', sortOrder: 4 },
+  ]
+
+  for (const cat of categoriesData)
+  {
+    const existing = await prisma.serviceCategory.findFirst({
+      where: { clinicId: clinic.id, name: cat.name }
+    })
+    if (!existing)
+    {
+      await prisma.serviceCategory.create({
+        data: { ...cat, clinicId: clinic.id }
+      })
+    }
+  }
   console.log('Created service categories')
 
   // Get category IDs
@@ -40,38 +57,55 @@ async function main()
   })
 
   // 3. Create Services
-  const services = await prisma.service.createMany({
-    data: [
-      {
-        clinicId: clinic.id,
-        categoryId: consultasCategory!.id,
-        name: 'Consulta General',
-        description: 'Consulta médica general',
-        basePrice: 500.00,
-        duration: 30,
-      },
-      {
-        clinicId: clinic.id,
-        categoryId: consultasCategory!.id,
-        name: 'Consulta Especialista',
-        description: 'Consulta con especialista',
-        basePrice: 800.00,
-        duration: 45,
-      },
-      {
-        clinicId: clinic.id,
-        name: 'Electrocardiograma',
-        description: 'Estudio de electrocardiograma',
-        basePrice: 350.00,
-        duration: 20,
-      },
-    ],
-  })
+  // 3. Create Services
+  const servicesData = [
+    {
+      categoryId: consultasCategory!.id,
+      name: 'Consulta General',
+      description: 'Consulta médica general',
+      basePrice: 500.00,
+      duration: 30,
+    },
+    {
+      categoryId: consultasCategory!.id,
+      name: 'Consulta Especialista',
+      description: 'Consulta con especialista',
+      basePrice: 800.00,
+      duration: 45,
+    },
+    {
+      name: 'Electrocardiograma',
+      description: 'Estudio de electrocardiograma',
+      basePrice: 350.00,
+      duration: 20,
+    },
+  ]
+
+  for (const svc of servicesData)
+  {
+    const existing = await prisma.service.findFirst({
+      where: { clinicId: clinic.id, name: svc.name }
+    })
+    if (!existing)
+    {
+      await prisma.service.create({
+        data: { ...svc, clinicId: clinic.id }
+      })
+    }
+  }
   console.log('Created services')
 
   // 4. Create Patients
-  const patient1 = await prisma.patient.create({
-    data: {
+  // 4. Create Patients
+  const patient1 = await prisma.patient.upsert({
+    where: {
+      clinicId_curp: {
+        clinicId: clinic.id,
+        curp: 'PEGJ800101HDFRNN09'
+      }
+    },
+    update: {},
+    create: {
       clinicId: clinic.id,
       firstName: 'Juan',
       lastName: 'Pérez',
@@ -110,8 +144,15 @@ async function main()
   })
   console.log(`Created patient: ${patient1.firstName} ${patient1.lastName}`)
 
-  const patient2 = await prisma.patient.create({
-    data: {
+  const patient2 = await prisma.patient.upsert({
+    where: {
+      clinicId_curp: {
+        clinicId: clinic.id,
+        curp: 'GAAA850505MDFRNN02'
+      }
+    },
+    update: {},
+    create: {
       clinicId: clinic.id,
       firstName: 'Ana',
       lastName: 'García',
@@ -134,29 +175,39 @@ async function main()
   console.log(`Created patient: ${patient2.firstName} ${patient2.lastName}`)
   try
   {
-    const response = await fetch('http://localhost:3000/api/auth/sign-up/email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: 'admin@clinica.com',
-        password: 'Admin123!',
+    const email = 'admin@clinica.com'
+    const password = 'Admin123!'
+    const hashedPassword = await hashPassword(password)
+    const adminUser = await prisma.user.create({
+      data: {
+        id: `admin_${Date.now()}`,
+        email: email,
         name: 'Administrador Principal',
         role: 'ADMIN',
         clinicId: clinic.id,
         licenseNumber: 'ADMIN001',
         specialty: 'Administración',
-      }),
+        isActive: true,
+        emailVerified: true,
+      }
     })
-    if (response.ok)
-    {
-      console.log('Created admin user: admin@clinica.com / Admin123!')
-    } else
-    {
-      console.log('Admin user might already exist')
-    }
+    console.log("Admin ha sido creado")
+    const account = await prisma.account.create({
+      data: {
+        id: `account_${Date.now()}`,
+        accountId: adminUser.id,
+        providerId: 'credential',
+        userId: adminUser.id,
+        password: hashedPassword,
+      }
+    })
+    console.log('Admin user created directly in DB:', adminUser.email)
+    console.log('Admin account created directly in DB:', account.id)
+    console.log(adminUser)
+    console.log(account)
   } catch (error)
   {
-    console.log('Note: Create admin user manually via API or UI')
+    console.log('Error creating admin user:', JSON.stringify(error.message, null, 2))
   }
   // Actualizar el summary al final:
   console.log('\n✅ Seed completed successfully!')
@@ -168,10 +219,13 @@ async function main()
   console.log(`- Admin user: admin@clinica.com / Admin123!`)
 }
 
+// @ts-expect-error
+BigInt.prototype.toJSON = function () { return this.toString() }
+
 main()
   .catch((e) =>
   {
-    console.error('Error during seed:', e)
+    console.error('Error during seed:', JSON.stringify(e, null, 2))
     process.exit(1)
   })
   .finally(async () =>
