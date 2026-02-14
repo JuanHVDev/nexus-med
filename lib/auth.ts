@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin } from "better-auth/plugins";
+import { inferAdditionalFields } from "better-auth/client/plugins";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 const adapter = new PrismaPg({
@@ -57,9 +58,19 @@ export const auth = betterAuth({
       adminRole: "ADMIN",
       defaultRole: "DOCTOR",
     }),
+    inferAdditionalFields({
+      user: {
+        role: { type: "string" },
+        clinicId: { type: "number" },
+        licenseNumber: { type: "string" },
+        specialty: { type: "string" },
+        phone: { type: "string" },
+        isActive: { type: "boolean" },
+      },
+    }),
   ],
   callbacks: {
-    async beforeRegister(user)
+    async beforeRegister(user: any)
     {
       if (!user.clinicId)
       {
@@ -69,8 +80,10 @@ export const auth = betterAuth({
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 días
-    updateAge: 60 * 60 * 24, // 1 día
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
   },
 });
-export type AuthSession = typeof auth.$Infer.Session;
+export type SessionWithFields = typeof auth.$Infer.Session.session & {
+  user: typeof auth.$Infer.Session.user
+}
