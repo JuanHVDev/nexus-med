@@ -15,13 +15,13 @@ import
 import { cn } from '@/lib/utils'
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Pacientes', href: '/dashboard/patients', icon: Users },
-  { name: 'Citas', href: '/dashboard/appointments', icon: Calendar },
-  { name: 'Consultas', href: '/dashboard/consultations', icon: Stethoscope },
-  { name: 'Recetas', href: '/dashboard/prescriptions', icon: Pill },
-  { name: 'Facturación', href: '/dashboard/billing', icon: CreditCard },
-  { name: 'Reportes', href: '/dashboard/reports', icon: FileText },
-  { name: 'Configuración', href: '/dashboard/settings', icon: Settings },
+  { name: 'Pacientes', href: '/patients', icon: Users },
+  { name: 'Citas', href: '/appointments', icon: Calendar },
+  { name: 'Consultas', href: '/consultations', icon: Stethoscope },
+  { name: 'Recetas', href: '/prescriptions', icon: Pill },
+  { name: 'Facturación', href: '/billing', icon: CreditCard },
+  { name: 'Reportes', href: '/reports', icon: FileText },
+  { name: 'Configuración', href: '/settings', icon: Settings },
 ]
 interface SidebarProps
 {

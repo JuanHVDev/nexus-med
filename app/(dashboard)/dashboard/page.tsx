@@ -215,13 +215,13 @@ export default async function DashboardPage()
           </CardHeader>
           <CardContent className="space-y-2">
             <a
-              href="/dashboard/patients/new"
+              href="/patients/new"
               className="block w-full text-center bg-primary text-white py-2 rounded-md hover:bg-primary/90"
             >
               + Nuevo Paciente
             </a>
             <a
-              href="/dashboard/appointments/new"
+              href="/appointments/new"
               className="block w-full text-center bg-secondary text-secondary-foreground py-2 rounded-md hover:bg-secondary/90"
             >
               + Nueva Cita
