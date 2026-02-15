@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
+import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import
@@ -214,18 +215,18 @@ export default async function DashboardPage()
             <CardTitle className="text-sm font-medium">Acciones Rápidas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <a
+            <Link
               href="/patients/new"
               className="block w-full text-center bg-primary text-white py-2 rounded-md hover:bg-primary/90"
             >
               + Nuevo Paciente
-            </a>
-            <a
+            </Link>
+            <Link
               href="/appointments/new"
               className="block w-full text-center bg-secondary text-secondary-foreground py-2 rounded-md hover:bg-secondary/90"
             >
               + Nueva Cita
-            </a>
+            </Link>
           </CardContent>
         </Card>
       </div>
