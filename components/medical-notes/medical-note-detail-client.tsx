@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -9,10 +10,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { ArrowLeft, User, Stethoscope, FileText, Activity, Pencil, Pill, Receipt } from 'lucide-react'
+import { ArrowLeft, User, Stethoscope, FileText, Activity, Pencil, Pill, Receipt, FlaskConical, ImageIcon, Check, Clock, AlertCircle } from 'lucide-react'
 import { specialtyLabels } from '@/lib/validations/medical-note'
 import { PrescriptionForm } from '@/components/prescriptions/prescription-form'
 import { GenerateInvoiceDialog } from '@/components/billing/generate-invoice-dialog'
+import { LabOrderForm } from '@/components/lab-orders/lab-order-form'
+import { ImagingOrderForm } from '@/components/imaging-orders/imaging-order-form'
 
 interface Patient {
   id: string
@@ -50,6 +53,43 @@ interface Prescription {
   }
 }
 
+interface LabOrder {
+  id: string
+  patientId: string
+  doctorId: string
+  medicalNoteId: string | null
+  orderDate: string
+  tests: { name: string; code?: string }[]
+  instructions: string | null
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  results: LabResult[]
+}
+
+interface LabResult {
+  id: string
+  labOrderId: string
+  testName: string
+  result: string | null
+  unit: string | null
+  referenceRange: string | null
+  flag: string | null
+}
+
+interface ImagingOrder {
+  id: string
+  patientId: string
+  doctorId: string
+  medicalNoteId: string | null
+  orderDate: string
+  studyType: string
+  bodyPart: string
+  reason: string | null
+  clinicalNotes: string | null
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  findings: string | null
+  impression: string | null
+}
+
 interface Note {
   id: string
   createdAt: Date
@@ -77,9 +117,31 @@ export function MedicalNoteDetailClient({ note, patientId }: MedicalNoteDetailCl
   const router = useRouter()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
+  const [labDialogOpen, setLabDialogOpen] = useState(false)
+  const [imagingDialogOpen, setImagingDialogOpen] = useState(false)
   const [prescriptions, setPrescriptions] = useState(note.prescriptions || [])
 
   const hasPrescription = prescriptions.length > 0
+
+  const { data: labOrders = [] } = useQuery<LabOrder[]>({
+    queryKey: ['lab-orders', 'medicalNote', note.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/lab-orders?medicalNoteId=${note.id}`)
+      if (!res.ok) throw new Error('Error fetching lab orders')
+      return res.json()
+    },
+    enabled: !!note.id,
+  })
+
+  const { data: imagingOrders = [] } = useQuery<ImagingOrder[]>({
+    queryKey: ['imaging-orders', 'medicalNote', note.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/imaging-orders?medicalNoteId=${note.id}`)
+      if (!res.ok) throw new Error('Error fetching imaging orders')
+      return res.json()
+    },
+    enabled: !!note.id,
+  })
 
   const patientName = `${note.patient.firstName} ${note.patient.middleName || ''} ${note.patient.lastName}`.trim()
 
@@ -102,6 +164,52 @@ export function MedicalNoteDetailClient({ note, patientId }: MedicalNoteDetailCl
             <Receipt className="h-4 w-4 mr-2" />
             Generar Factura
           </Button>
+          <Dialog open={labDialogOpen} onOpenChange={setLabDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <FlaskConical className="h-4 w-4 mr-2" />
+                Orden Laboratorio
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Nueva Orden de Laboratorio</DialogTitle>
+              </DialogHeader>
+              <LabOrderForm
+                patientId={patientId}
+                doctorId={note.doctor.id}
+                medicalNoteId={note.id}
+                onSuccess={() => {
+                  setLabDialogOpen(false)
+                  router.refresh()
+                }}
+                onCancel={() => setLabDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+          <Dialog open={imagingDialogOpen} onOpenChange={setImagingDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Orden Imagenología
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Nueva Orden de Imagenología</DialogTitle>
+              </DialogHeader>
+              <ImagingOrderForm
+                patientId={patientId}
+                doctorId={note.doctor.id}
+                medicalNoteId={note.id}
+                onSuccess={() => {
+                  setImagingDialogOpen(false)
+                  router.refresh()
+                }}
+                onCancel={() => setImagingDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
           {!hasPrescription && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
@@ -285,6 +393,123 @@ export function MedicalNoteDetailClient({ note, patientId }: MedicalNoteDetailCl
                     <p className="text-sm text-muted-foreground mt-2">
                       <strong>Instrucciones:</strong> {prescription.instructions}
                     </p>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {labOrders.length > 0 && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FlaskConical className="h-5 w-5" />
+                Órdenes de Laboratorio
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {labOrders.map((order) => (
+                <div key={order.id} className="p-4 border rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <span className="text-muted-foreground text-sm">
+                        {format(new Date(order.orderDate), 'dd/MM/yyyy')}
+                      </span>
+                    </div>
+                    <Badge className={
+                      order.status === 'COMPLETED' ? 'bg-green-500' :
+                      order.status === 'IN_PROGRESS' ? 'bg-blue-500' :
+                      order.status === 'CANCELLED' ? 'bg-red-500' : 'bg-yellow-500'
+                    }>
+                      {order.status === 'COMPLETED' ? <Check className="h-3 w-3 mr-1" /> :
+                       order.status === 'IN_PROGRESS' ? <Clock className="h-3 w-3 mr-1" /> :
+                       order.status === 'CANCELLED' ? <AlertCircle className="h-3 w-3 mr-1" /> :
+                       <Clock className="h-3 w-3 mr-1" />}
+                      {order.status === 'COMPLETED' ? 'Completado' :
+                       order.status === 'IN_PROGRESS' ? 'En proceso' :
+                       order.status === 'CANCELLED' ? 'Cancelado' : 'Pendiente'}
+                    </Badge>
+                  </div>
+                  <ul className="list-disc list-inside space-y-1">
+                    {order.tests.map((test, i) => (
+                      <li key={i} className="text-sm">{test.name}</li>
+                    ))}
+                  </ul>
+                  {order.results && order.results.length > 0 && (
+                    <div className="mt-3 pt-3 border-t">
+                      <p className="text-sm font-medium mb-2">Resultados:</p>
+                      <div className="space-y-1">
+                        {order.results.map((result) => (
+                          <div key={result.id} className="flex justify-between text-sm">
+                            <span>{result.testName}</span>
+                            <span className={result.flag === 'HIGH' || result.flag === 'LOW' || result.flag === 'CRITICAL' ? 'text-red-500 font-medium' : ''}>
+                              {result.result} {result.unit && result.unit}
+                              {result.flag && result.flag !== 'NORMAL' && ` (${result.flag})`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {order.instructions && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      <strong>Instrucciones:</strong> {order.instructions}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {imagingOrders.length > 0 && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                Órdenes de Imagenología
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {imagingOrders.map((order) => (
+                <div key={order.id} className="p-4 border rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <span className="text-muted-foreground text-sm">
+                        {format(new Date(order.orderDate), 'dd/MM/yyyy')}
+                      </span>
+                    </div>
+                    <Badge className={
+                      order.status === 'COMPLETED' ? 'bg-green-500' :
+                      order.status === 'IN_PROGRESS' ? 'bg-blue-500' :
+                      order.status === 'CANCELLED' ? 'bg-red-500' : 'bg-yellow-500'
+                    }>
+                      {order.status === 'COMPLETED' ? <Check className="h-3 w-3 mr-1" /> :
+                       order.status === 'IN_PROGRESS' ? <Clock className="h-3 w-3 mr-1" /> :
+                       order.status === 'CANCELLED' ? <AlertCircle className="h-3 w-3 mr-1" /> :
+                       <Clock className="h-3 w-3 mr-1" />}
+                      {order.status === 'COMPLETED' ? 'Completado' :
+                       order.status === 'IN_PROGRESS' ? 'En proceso' :
+                       order.status === 'CANCELLED' ? 'Cancelado' : 'Pendiente'}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm"><strong>Tipo:</strong> {order.studyType}</p>
+                    <p className="text-sm"><strong>Región:</strong> {order.bodyPart}</p>
+                    {order.reason && <p className="text-sm"><strong>Razón:</strong> {order.reason}</p>}
+                  </div>
+                  {order.findings && (
+                    <div className="mt-3 pt-3 border-t">
+                      <p className="text-sm font-medium">Hallazgos:</p>
+                      <p className="text-sm text-muted-foreground">{order.findings}</p>
+                    </div>
+                  )}
+                  {order.impression && (
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">Impresión:</p>
+                      <p className="text-sm text-muted-foreground">{order.impression}</p>
+                    </div>
                   )}
                 </div>
               ))}
