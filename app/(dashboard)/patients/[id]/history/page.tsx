@@ -16,6 +16,18 @@ interface HistoryPageProps {
   params: Promise<{ id: string }>
 }
 
+interface VitalSigns {
+  bloodPressureSystolic?: number
+  bloodPressureDiastolic?: number
+  heartRate?: number
+  temperature?: number
+  weight?: number
+  height?: number
+  bmi?: number
+  oxygenSaturation?: number
+  glucose?: number
+}
+
 export default function PatientHistoryPage({ params }: HistoryPageProps) {
   const [patientId, setPatientId] = React.useState<string>('')
 
@@ -44,7 +56,7 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
   })
 
   const updateHistoryMutation = useMutation({
-    mutationFn: (data: any) => fetch(`/api/patients/${patientId}/history`, {
+    mutationFn: (data: Record<string, unknown>) => fetch(`/api/patients/${patientId}/history`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -57,7 +69,7 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
   })
 
   const addContactMutation = useMutation({
-    mutationFn: (data: any) => fetch(`/api/patients/${patientId}/emergency-contacts`, {
+    mutationFn: (data: Record<string, unknown>) => fetch(`/api/patients/${patientId}/emergency-contacts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -69,12 +81,70 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
     onError: () => toast.error('Error al agregar contacto')
   })
 
+  const deleteContactMutation = useMutation({
+    mutationFn: (contactId: string) => fetch(`/api/patients/${patientId}/emergency-contacts/${contactId}`, {
+      method: 'DELETE'
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['emergency-contacts'] })
+      toast.success('Contacto eliminado')
+    },
+    onError: () => toast.error('Error al eliminar contacto')
+  })
+
   const [newAllergy, setNewAllergy] = React.useState('')
   const [newMedication, setNewMedication] = React.useState('')
   const [newDisease, setNewDisease] = React.useState('')
   const [newSurgery, setNewSurgery] = React.useState('')
 
   const [newContact, setNewContact] = React.useState({ name: '', relation: '', phone: '', email: '', isPrimary: false })
+
+  const [vitalSigns, setVitalSigns] = React.useState<VitalSigns>({
+    bloodPressureSystolic: undefined,
+    bloodPressureDiastolic: undefined,
+    heartRate: undefined,
+    temperature: undefined,
+    weight: undefined,
+    height: undefined,
+    bmi: undefined,
+    oxygenSaturation: undefined,
+    glucose: undefined
+  })
+
+  React.useEffect(() => {
+    if (history?.vitalSigns) {
+      setVitalSigns(history.vitalSigns)
+    }
+  }, [history?.vitalSigns])
+
+  const calculateBMI = (weight?: number, height?: number) => {
+    if (!weight || !height) return undefined
+    const heightInMeters = height / 100
+    return Number((weight / (heightInMeters * heightInMeters)).toFixed(1))
+  }
+
+  const handleVitalSignsChange = (field: keyof VitalSigns, value: string) => {
+    const numValue = value ? parseFloat(value) : undefined
+    const newVitals = { ...vitalSigns, [field]: numValue }
+    
+    if (field === 'weight' || field === 'height') {
+      newVitals.bmi = calculateBMI(
+        field === 'weight' ? numValue : vitalSigns.weight,
+        field === 'height' ? numValue : vitalSigns.height
+      )
+    }
+    
+    setVitalSigns(newVitals)
+  }
+
+  const handleSaveVitalSigns = () => {
+    updateHistoryMutation.mutate({
+      vitalSigns: {
+        ...vitalSigns,
+        bmi: calculateBMI(vitalSigns.weight, vitalSigns.height)
+      }
+    })
+  }
 
   const handleAddAllergy = () => {
     if (!newAllergy.trim()) return
@@ -84,7 +154,7 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
   }
 
   const handleRemoveAllergy = (index: number) => {
-    const allergies = (history?.allergies || []).filter((_: any, i: number) => i !== index)
+    const allergies = (history?.allergies || []).filter((_: unknown, i: number) => i !== index)
     updateHistoryMutation.mutate({ allergies })
   }
 
@@ -96,7 +166,7 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
   }
 
   const handleRemoveMedication = (index: number) => {
-    const medications = (history?.currentMedications || []).filter((_: any, i: number) => i !== index)
+    const medications = (history?.currentMedications || []).filter((_: unknown, i: number) => i !== index)
     updateHistoryMutation.mutate({ currentMedications: medications })
   }
 
@@ -108,7 +178,7 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
   }
 
   const handleRemoveDisease = (index: number) => {
-    const diseases = (history?.chronicDiseases || []).filter((_: any, i: number) => i !== index)
+    const diseases = (history?.chronicDiseases || []).filter((_: unknown, i: number) => i !== index)
     updateHistoryMutation.mutate({ chronicDiseases: diseases })
   }
 
@@ -120,7 +190,7 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
   }
 
   const handleRemoveSurgery = (index: number) => {
-    const surgeries = (history?.surgeries || []).filter((_: any, i: number) => i !== index)
+    const surgeries = (history?.surgeries || []).filter((_: unknown, i: number) => i !== index)
     updateHistoryMutation.mutate({ surgeries })
   }
 
@@ -133,7 +203,13 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
     setNewContact({ name: '', relation: '', phone: '', email: '', isPrimary: false })
   }
 
-  const handleSaveField = (field: string, value: any) => {
+  const handleDeleteContact = (contactId: string) => {
+    if (confirm('¿Estás seguro de eliminar este contacto?')) {
+      deleteContactMutation.mutate(contactId)
+    }
+  }
+
+  const handleSaveField = (field: string, value: unknown) => {
     updateHistoryMutation.mutate({ [field]: value })
   }
 
@@ -168,6 +244,7 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
           <TabsTrigger value="allergies">Alergias</TabsTrigger>
           <TabsTrigger value="medications">Medicamentos</TabsTrigger>
           <TabsTrigger value="antecedents">Antecedentes</TabsTrigger>
+          <TabsTrigger value="vitals">Signos Vitales</TabsTrigger>
           <TabsTrigger value="habits">Hábitos</TabsTrigger>
           <TabsTrigger value="contacts">Contactos</TabsTrigger>
         </TabsList>
@@ -297,6 +374,113 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
                   onBlur={(e) => handleSaveField('familyHistory', e.target.value)}
                 />
               </div>
+
+              <div>
+                <h3 className="font-medium mb-2">Antecedentes Personales Patológicos</h3>
+                <textarea
+                  className="w-full min-h-[100px] p-3 border rounded-md"
+                  placeholder="Describe padecimientos personales, alergias, cirugías previas, enfermedades actuales, etc..."
+                  defaultValue={history?.personalHistory || ''}
+                  onBlur={(e) => handleSaveField('personalHistory', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="vitals">
+          <Card>
+            <CardHeader>
+              <CardTitle>Signos Vitales</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label>Presión Sistólica (mmHg)</Label>
+                  <Input
+                    type="number"
+                    placeholder="120"
+                    value={vitalSigns.bloodPressureSystolic || ''}
+                    onChange={(e) => handleVitalSignsChange('bloodPressureSystolic', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Presión Diastólica (mmHg)</Label>
+                  <Input
+                    type="number"
+                    placeholder="80"
+                    value={vitalSigns.bloodPressureDiastolic || ''}
+                    onChange={(e) => handleVitalSignsChange('bloodPressureDiastolic', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Frecuencia Cardíaca (lpm)</Label>
+                  <Input
+                    type="number"
+                    placeholder="72"
+                    value={vitalSigns.heartRate || ''}
+                    onChange={(e) => handleVitalSignsChange('heartRate', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Temperatura (°C)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="36.5"
+                    value={vitalSigns.temperature || ''}
+                    onChange={(e) => handleVitalSignsChange('temperature', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Peso (kg)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="70"
+                    value={vitalSigns.weight || ''}
+                    onChange={(e) => handleVitalSignsChange('weight', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Altura (cm)</Label>
+                  <Input
+                    type="number"
+                    placeholder="170"
+                    value={vitalSigns.height || ''}
+                    onChange={(e) => handleVitalSignsChange('height', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>IMC</Label>
+                  <Input
+                    disabled
+                    placeholder="Calculado"
+                    value={vitalSigns.bmi || ''}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Saturación O2 (%)</Label>
+                  <Input
+                    type="number"
+                    placeholder="98"
+                    value={vitalSigns.oxygenSaturation || ''}
+                    onChange={(e) => handleVitalSignsChange('oxygenSaturation', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Glucosa (mg/dL)</Label>
+                  <Input
+                    type="number"
+                    placeholder="100"
+                    value={vitalSigns.glucose || ''}
+                    onChange={(e) => handleVitalSignsChange('glucose', e.target.value)}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleSaveVitalSigns} className="mt-4">
+                <Save className="h-4 w-4 mr-2" /> Guardar Signos Vitales
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -365,12 +549,19 @@ export default function PatientHistoryPage({ params }: HistoryPageProps) {
                 <Button onClick={handleAddContact}><Plus className="h-4 w-4" /></Button>
               </div>
               <div className="space-y-2">
-                {(contacts || []).map((contact: any) => (
+                {(contacts || []).map((contact: { id: string; name: string; isPrimary?: boolean; relation: string; phone: string }) => (
                   <div key={contact.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{contact.name} {contact.isPrimary && <span className="text-xs bg-blue-100 text-blue-700 px-1 rounded">Primary</span>}</p>
                       <p className="text-sm text-muted-foreground">{contact.relation} - {contact.phone}</p>
                     </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleDeleteContact(contact.id)}
+                    >
+                      <X className="h-4 w-4 text-red-500" />
+                    </Button>
                   </div>
                 ))}
                 {(contacts || []).length === 0 && (
