@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useState } from 'react'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
@@ -38,18 +38,15 @@ import {
 import { 
   ArrowLeft, 
   Download, 
-  Printer, 
   Plus, 
-  Trash2,
   Loader2,
-  FileText,
   CreditCard,
   Banknote,
   Building,
   FileCheck
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { InvoicePDF, generateInvoicePDF } from '@/components/billing/invoice-pdf'
+import { generateInvoicePDF } from '@/components/billing/invoice-pdf'
 
 interface InvoiceItem {
   id: string
@@ -97,7 +94,6 @@ interface Invoice {
 }
 
 export default function InvoiceDetailPage() {
-  const router = useRouter()
   const params = useParams()
   const invoiceId = params.id as string
   const queryClient = useQueryClient()

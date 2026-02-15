@@ -7,30 +7,11 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Calendar, User, Stethoscope, FileText, Clock } from "lucide-react"
+import { ArrowLeft, Calendar, User, Stethoscope, FileText } from "lucide-react"
 import { StatusChangeButton } from "@/components/appointments/status-change-button"
 
 interface PageProps {
   params: Promise<{ id: string }>
-}
-
-const statusLabels: Record<string, string> = {
-  SCHEDULED: 'Programada',
-  CONFIRMED: 'Confirmada',
-  IN_PROGRESS: 'En progreso',
-  COMPLETED: 'Completada',
-  CANCELLED: 'Cancelada',
-  NO_SHOW: 'No se presentó',
-}
-
-const statusColors: Record<string, string> = {
-  SCHEDULED: 'bg-blue-500',
-  CONFIRMED: 'bg-green-500',
-  IN_PROGRESS: 'bg-yellow-500',
-  COMPLETED: 'bg-gray-500',
-  CANCELLED: 'bg-red-500',
-  NO_SHOW: 'bg-red-700',
 }
 
 export default async function AppointmentDetailPage({ params }: PageProps) {

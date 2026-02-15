@@ -10,6 +10,31 @@ import { ArrowLeft, FileText, Eye, Edit, Plus, Stethoscope } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
+interface Note {
+  id: string
+  clinicId: string
+  patientId: string
+  doctorId: string
+  appointmentId: string | null
+  specialty: string | null
+  type: string | null
+  chiefComplaint: string
+  currentIllness: string | null
+  vitalSigns: unknown
+  physicalExam: string | null
+  diagnosis: string
+  prognosis: string | null
+  treatment: string | null
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  doctor: {
+    id: string
+    name: string
+    specialty: string | null
+  } | null
+}
+
 interface NotesPageProps {
   params: Promise<{ id: string }>
 }
@@ -57,7 +82,7 @@ export default function PatientNotesPage({ params }: NotesPageProps) {
 
       {notes && notes.length > 0 ? (
         <div className="space-y-4">
-          {notes.map((note: any) => (
+          {notes.map((note: Note) => (
             <Card key={note.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">

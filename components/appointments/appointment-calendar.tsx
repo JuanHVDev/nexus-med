@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Calendar, dateFnsLocalizer, View, SlotInfo } from 'react-big-calendar'
-import { format, parse, startOfWeek, getDay, addMinutes } from 'date-fns'
+import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 

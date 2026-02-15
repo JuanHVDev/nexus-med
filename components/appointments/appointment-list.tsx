@@ -75,7 +75,7 @@ const statusColors: Record<string, string> = {
   NO_SHOW: 'bg-red-700',
 }
 
-export function AppointmentList({ appointments, onStatusChange, onDelete }: AppointmentListProps) {
+export function AppointmentList({ appointments, onDelete }: AppointmentListProps) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 

@@ -3,7 +3,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -31,8 +30,7 @@ import {
   specialties, 
   specialtyLabels,
   templateFields,
-  type MedicalNoteInputFormData,
-  type VitalSignsData
+  type MedicalNoteInputFormData
 } from '@/lib/validations/medical-note'
 
 interface Patient {
@@ -69,9 +67,7 @@ export function MedicalNoteForm({
   isEditMode = false,
   noteId
 }: MedicalNoteFormProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string>(defaultValues?.specialty || 'GENERAL')
+  const [, setSelectedSpecialty] = useState<string>(defaultValues?.specialty || 'GENERAL')
   const [localVitalSigns, setLocalVitalSigns] = useState<{
     bloodPressureSystolic?: number
     bloodPressureDiastolic?: number

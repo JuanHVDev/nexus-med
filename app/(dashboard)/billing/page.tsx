@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { 
   Table,
   TableBody,

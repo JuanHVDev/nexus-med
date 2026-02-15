@@ -33,7 +33,7 @@ export function DashboardHeader({ user }: HeaderProps)
       toast.success('Sesión cerrada')
       router.push('/auth/login')
       router.refresh()
-    } catch (error)
+    } catch
     {
       toast.error('Error al cerrar sesión')
     }

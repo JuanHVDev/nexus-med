@@ -29,7 +29,7 @@ export default function EditPatientPage({ params }: EditPatientPageProps) {
 
   const handleSubmit = async (data: PatientEditInputFormData) => {
     const cleanedData = Object.fromEntries(
-      Object.entries(data).filter(([_, v]) => v !== null && v !== undefined && v !== '')
+      Object.entries(data).filter(([, v]) => v !== null && v !== undefined && v !== '')
     )
     
     const response = await fetch(`/api/patients/${patientId}`, {

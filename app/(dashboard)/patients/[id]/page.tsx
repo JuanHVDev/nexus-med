@@ -19,7 +19,7 @@ export default async function PatientDetailPage({
 
   const now = new Date()
 
-  const [patient, lastAppointment, nextAppointment, recentNotes, labOrders, imagingOrders] = await Promise.all([
+  const [patient, nextAppointment, recentNotes, labOrders, imagingOrders] = await Promise.all([
     prisma.patient.findFirst({
       where: { id: BigInt(id), clinicId: session.user.clinicId },
       include: {
@@ -27,11 +27,6 @@ export default async function PatientDetailPage({
         emergencyContacts: true,
         _count: { select: { appointments: true, medicalNotes: true } }
       }
-    }),
-    prisma.appointment.findFirst({
-      where: { patientId: BigInt(id), status: 'COMPLETED' },
-      orderBy: { startTime: 'desc' },
-      include: { doctor: { select: { name: true } } }
     }),
     prisma.appointment.findFirst({
       where: { 

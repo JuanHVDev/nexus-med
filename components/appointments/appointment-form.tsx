@@ -3,7 +3,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,7 +45,6 @@ interface AppointmentFormProps {
 }
 
 export function AppointmentForm({ onSubmit, defaultValues, isLoading, onCancel }: AppointmentFormProps) {
-  const router = useRouter()
   const [patients, setPatients] = useState<Patient[]>([])
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [loadingPatients, setLoadingPatients] = useState(true)

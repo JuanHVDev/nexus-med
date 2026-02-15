@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -10,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { medicationSchema, type Medication } from '@/lib/validations/prescription'
+import { type Medication } from '@/lib/validations/prescription'
 
 interface PrescriptionFormProps {
   patientId: string

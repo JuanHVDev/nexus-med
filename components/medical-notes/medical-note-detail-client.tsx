@@ -119,7 +119,7 @@ export function MedicalNoteDetailClient({ note, patientId }: MedicalNoteDetailCl
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
   const [labDialogOpen, setLabDialogOpen] = useState(false)
   const [imagingDialogOpen, setImagingDialogOpen] = useState(false)
-  const [prescriptions, setPrescriptions] = useState(note.prescriptions || [])
+  const [prescriptions] = useState(note.prescriptions || [])
 
   const hasPrescription = prescriptions.length > 0
 

@@ -24,7 +24,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import { Badge } from '@/components/ui/badge'
-import { Search, FileText, ChevronRight, Download, Loader2 } from 'lucide-react'
+import { Search, FileText, ChevronRight, Download } from 'lucide-react'
 import { generatePrescriptionPDF } from '@/components/prescriptions/prescription-pdf'
 import { toast } from 'sonner'
 

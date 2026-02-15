@@ -54,7 +54,7 @@ export default function RegisterPage() {
     setIsLoading(true)
     try
     {
-      const { data: result, error } = await authClient.signUp.email({
+      const { error } = await authClient.signUp.email({
         email: data.email,
         password: data.password,
         name: data.name,
@@ -74,7 +74,7 @@ export default function RegisterPage() {
         router.push('/dashboard')
         router.refresh()
       }
-    } catch (error)
+    } catch
     {
       toast.error('Error inesperado al registrarse')
     } finally

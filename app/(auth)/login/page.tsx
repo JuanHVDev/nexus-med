@@ -29,7 +29,7 @@ function LoginForm()
     setIsLoading(true)
     try
     {
-      const { data: result, error } = await authClient.signIn.email({
+      const { error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
         callbackURL: callbackUrl,
@@ -43,7 +43,7 @@ function LoginForm()
         router.push(callbackUrl)
         router.refresh()
       }
-    } catch (error)
+    } catch
     {
       toast.error('Error inesperado al iniciar sesión')
     } finally

@@ -41,7 +41,7 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
   const [patientSearch, setPatientSearch] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 
-  const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<InvoiceInputFormData>({
+  const { register, control, handleSubmit, watch, reset } = useForm<InvoiceInputFormData>({
     resolver: zodResolver(invoiceInputSchema),
     defaultValues: {
       items: [{ description: '', quantity: 1, unitPrice: 0, discount: 0 }],

@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -44,11 +43,8 @@ import {
   Plus,
   Search,
   Loader2,
-  FlaskConical,
   FileText,
-  Check,
-  X,
-  Clock
+  X
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -116,13 +112,6 @@ const STATUS_COLORS = {
   IN_PROGRESS: 'bg-blue-500',
   COMPLETED: 'bg-green-500',
   CANCELLED: 'bg-red-500',
-}
-
-const STATUS_LABELS = {
-  PENDING: 'Pendiente',
-  IN_PROGRESS: 'En proceso',
-  COMPLETED: 'Completado',
-  CANCELLED: 'Cancelado',
 }
 
 export default function LabOrdersPage() {

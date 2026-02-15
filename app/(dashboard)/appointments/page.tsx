@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { AppointmentCalendar } from '@/components/appointments/appointment-calendar'
 import { AppointmentList } from '@/components/appointments/appointment-list'
 import { Button } from '@/components/ui/button'
@@ -37,7 +36,7 @@ function AppointmentsContent() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null)
 
-  const { data: appointmentsData, isLoading } = useQuery({
+  const { data: appointmentsData } = useQuery({
     queryKey: ['appointments'],
     queryFn: async () => {
       const res = await fetch('/api/appointments?limit=100')

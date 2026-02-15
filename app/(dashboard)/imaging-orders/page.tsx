@@ -44,8 +44,6 @@ import {
   Plus,
   Search,
   Loader2,
-  ImageIcon,
-  FileText,
   X
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -90,13 +88,6 @@ interface Patient {
 interface Doctor {
   id: string
   name: string
-}
-
-const STATUS_COLORS = {
-  PENDING: 'bg-yellow-500',
-  IN_PROGRESS: 'bg-blue-500',
-  COMPLETED: 'bg-green-500',
-  CANCELLED: 'bg-red-500',
 }
 
 export default function ImagingOrdersPage() {
