@@ -55,6 +55,13 @@ enum PaymentMethod {
   CHECK
 }
 
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 // ============ CORE MODELS ============
 
 model Clinic {
@@ -73,6 +80,8 @@ model Clinic {
   invoices          Invoice[]
   services          Service[]
   serviceCategories ServiceCategory[]
+  labOrders         LabOrder[]
+  imagingOrders    ImagingOrder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -104,6 +113,8 @@ model User {
   medicalNotes  MedicalNote[]
   prescriptions Prescription[]
   invoices      Invoice[]
+  labOrders     LabOrder[]
+  imagingOrders ImagingOrder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,6 +158,8 @@ model Patient {
   appointments      Appointment[]
   medicalNotes      MedicalNote[]
   prescriptions     Prescription[]
+  labOrders         LabOrder[]
+  imagingOrders    ImagingOrder[]
   invoices          Invoice[]
 
   createdAt DateTime @default(now())
@@ -269,6 +282,8 @@ model MedicalNote {
   notes          String?
 
   prescriptions Prescription[]
+  labOrders     LabOrder[]
+  imagingOrders ImagingOrder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -437,6 +452,103 @@ model Payment {
   @@index([invoiceId])
   @@index([paymentDate])
   @@map("payments")
+}
+
+// ============ LABORATORY MODELS ============
+
+model LabOrder {
+  id       BigInt @id @default(autoincrement())
+  clinicId BigInt
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  patientId BigInt
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId String
+  doctor   User   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  medicalNoteId BigInt?
+  medicalNote   MedicalNote? @relation(fields: [medicalNoteId], references: [id], onDelete: SetNull)
+
+  orderDate   DateTime      @default(now())
+  tests       Json          // Array of { name, code, price }
+  instructions String?
+
+  status OrderStatus @default(PENDING)
+
+  results LabResult[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
+  @@index([orderDate])
+  @@map("lab_orders")
+}
+
+model LabResult {
+  id         BigInt  @id @default(autoincrement())
+  labOrderId BigInt
+  labOrder   LabOrder @relation(fields: [labOrderId], references: [id], onDelete: Cascade)
+
+  testName      String
+  result        String?
+  unit          String?
+  referenceRange String?
+  flag          String?   // LOW, HIGH, NORMAL, CRITICAL
+
+  resultDate DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([labOrderId])
+  @@map("lab_results")
+}
+
+// ============ IMAGING MODELS ============
+
+model ImagingOrder {
+  id       BigInt @id @default(autoincrement())
+  clinicId BigInt
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  patientId BigInt
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId String
+  doctor   User   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  medicalNoteId BigInt?
+  medicalNote   MedicalNote? @relation(fields: [medicalNoteId], references: [id], onDelete: SetNull)
+
+  orderDate    DateTime      @default(now())
+  studyType    String        // RX, TAC, RM, USG, etc.
+  bodyPart     String
+  reason       String?
+  clinicalNotes String?
+
+  status OrderStatus @default(PENDING)
+
+  reportUrl   String?   // PDF report
+  imagesUrl   String?   // DICOM or images
+  findings    String?
+  impression  String?
+
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
+  @@index([orderDate])
+  @@index([studyType])
+  @@map("imaging_orders")
 }
 
 // ============ BETTER-AUTH MODELS ============
