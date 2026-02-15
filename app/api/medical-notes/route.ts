@@ -16,9 +16,10 @@ export async function GET(request: Request) {
   const doctorId = searchParams.get("doctorId")
   const startDate = searchParams.get("startDate")
   const endDate = searchParams.get("endDate")
+  const search = searchParams.get("search")
 
   const where: Record<string, unknown> = {
-    clinicId: session.user.clinicId,
+    clinicId: BigInt(session.user.clinicId!),
   }
 
   if (patientId) where.patientId = BigInt(patientId)
@@ -27,6 +28,14 @@ export async function GET(request: Request) {
     where.createdAt = {}
     if (startDate) (where.createdAt as Record<string, Date>).gte = new Date(startDate)
     if (endDate) (where.createdAt as Record<string, Date>).lte = new Date(endDate)
+  }
+  if (search) {
+    where.OR = [
+      { patient: { firstName: { contains: search, mode: 'insensitive' } } },
+      { patient: { lastName: { contains: search, mode: 'insensitive' } } },
+      { diagnosis: { contains: search, mode: 'insensitive' } },
+      { chiefComplaint: { contains: search, mode: 'insensitive' } },
+    ]
   }
 
   const [notes, total] = await Promise.all([
@@ -62,6 +71,7 @@ export async function GET(request: Request) {
       id: note.id.toString(),
       clinicId: note.clinicId.toString(),
       patientId: note.patientId.toString(),
+      appointmentId: note.appointmentId?.toString() ?? null,
       patient: {
         ...note.patient,
         id: note.patient.id.toString()
