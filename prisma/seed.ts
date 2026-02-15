@@ -1,5 +1,5 @@
 import { hashPassword } from 'better-auth/crypto'
-import { PrismaClient, Role, Gender, BloodType } from '../generated/prisma/client'
+import { PrismaClient, Gender, BloodType } from '../generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import 'dotenv/config'
 

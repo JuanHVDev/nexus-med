@@ -1,11 +1,8 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { patientEditSchema, patientEditInputSchema } from "@/lib/validations/patient"
+import { patientEditSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
-import { z } from "zod"
-
-type PatientEditInput = z.infer<typeof patientEditInputSchema>
 
 async function getPatientOrError(id: string, clinicId: bigint)
 {

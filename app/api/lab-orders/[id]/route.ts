@@ -2,7 +2,6 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
 import { labOrderUpdateSchema } from '@/lib/validations/lab-order'
 
 export async function GET(

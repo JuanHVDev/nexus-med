@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma"
 import { patientSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
-import { z } from "zod"
 
 export async function GET(request: Request)
 {

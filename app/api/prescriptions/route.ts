@@ -2,7 +2,8 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { prescriptionInputSchema, prescriptionFilterSchema } from '@/lib/validations/prescription'
+import { prescriptionInputSchema } from '@/lib/validations/prescription'
+import type { Medication } from '@/lib/validations/prescription'
 
 export async function GET(request: Request) {
   try {
@@ -172,7 +173,7 @@ export async function POST(request: Request) {
         patientId: patientIdBigInt,
         doctorId: session.user.id,
         medicalNoteId: medicalNoteIdBigInt,
-        medications: medications as unknown as any,
+        medications: medications as Medication[],
         instructions,
         validUntil: validUntil ? new Date(validUntil) : undefined,
       },
