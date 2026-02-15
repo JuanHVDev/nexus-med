@@ -26,12 +26,14 @@ interface PatientFormProps {
   defaultValues?: Partial<PatientInputFormData>
   isLoading?: boolean
   mode?: 'create' | 'edit'
+  onCancel?: () => void
 }
 
-export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create' }: PatientFormProps) {
+export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create', onCancel }: PatientFormProps) {
   const schema = mode === 'edit' ? patientEditInputSchema : patientInputSchema
   
   const form = useForm<PatientInputFormData | PatientEditInputFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema as any),
     defaultValues: {
       firstName: '',
@@ -291,7 +293,11 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
         />
 
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline">Cancelar</Button>
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancelar
+            </Button>
+          )}
           <Button type="submit" disabled={isLoading}>
             {isLoading ? 'Guardando...' : mode === 'edit' ? 'Actualizar Paciente' : 'Crear Paciente'}
           </Button>

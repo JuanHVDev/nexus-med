@@ -8,6 +8,7 @@ import type { PatientEditInputFormData } from '@/lib/validations/patient'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { use } from 'react'
 
 interface EditPatientPageProps {
   params: Promise<{ id: string }>
@@ -15,16 +16,15 @@ interface EditPatientPageProps {
 
 export default function EditPatientPage({ params }: EditPatientPageProps) {
   const router = useRouter()
-  const [id, setId] = React.useState<string>('')
-
-  React.useEffect(() => {
-    params.then(p => setId(p.id))
-  }, [params])
+  const resolvedParams = use(params)
+  const patientId = resolvedParams.id
 
   const { data: patient, isLoading } = useQuery({
-    queryKey: ['patient', id],
-    queryFn: () => fetch(`/api/patients/${id}`).then(r => r.json()),
-    enabled: !!id
+    queryKey: ['patient', patientId],
+    queryFn: () => fetch(`/api/patients/${patientId}`).then(r => r.json()),
+    enabled: !!patientId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const handleSubmit = async (data: PatientEditInputFormData) => {
@@ -32,7 +32,7 @@ export default function EditPatientPage({ params }: EditPatientPageProps) {
       Object.entries(data).filter(([_, v]) => v !== null && v !== undefined && v !== '')
     )
     
-    const response = await fetch(`/api/patients/${id}`, {
+    const response = await fetch(`/api/patients/${patientId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cleanedData)
@@ -45,8 +45,12 @@ export default function EditPatientPage({ params }: EditPatientPageProps) {
     }
 
     toast.success('Paciente actualizado exitosamente')
-    router.push(`/patients/${id}`)
+    router.push(`/patients/${patientId}`)
     router.refresh()
+  }
+
+  const handleCancel = () => {
+    router.back()
   }
 
   if (isLoading) {
@@ -78,7 +82,7 @@ export default function EditPatientPage({ params }: EditPatientPageProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/patients/${id}`}>
+        <Link href={`/patients/${patientId}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -88,7 +92,7 @@ export default function EditPatientPage({ params }: EditPatientPageProps) {
           <p className="text-muted-foreground">Actualiza la información del paciente</p>
         </div>
       </div>
-      <PatientForm onSubmit={handleSubmit} defaultValues={defaultValues} mode="edit" />
+      <PatientForm onSubmit={handleSubmit} defaultValues={defaultValues} mode="edit" onCancel={handleCancel} />
     </div>
   )
 }

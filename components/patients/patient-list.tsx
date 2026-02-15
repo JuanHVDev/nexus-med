@@ -13,7 +13,20 @@ import
   Pagination, PaginationContent, PaginationItem,
   PaginationPrevious, PaginationNext, PaginationLink
 } from '@/components/ui/pagination'
-import { Plus, Search, Edit, Eye, Phone, Mail } from 'lucide-react'
+import { Plus, Search, Edit, Eye, FileText } from 'lucide-react'
+
+type PatientListItem = {
+  id: string
+  firstName: string
+  lastName: string
+  middleName?: string
+  curp?: string
+  phone?: string
+  mobile?: string
+  email?: string
+  bloodType?: string
+  birthDate: string
+}
 export function PatientList()
 {
   const [page, setPage] = useState(1)
@@ -61,7 +74,7 @@ export function PatientList()
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.data?.map((patient: any) => (
+            {data?.data?.map((patient: PatientListItem) => (
               <TableRow key={patient.id}>
                 <TableCell className="font-medium">
                   {patient.lastName} {patient.firstName} {patient.middleName}
@@ -75,6 +88,9 @@ export function PatientList()
                   <div className="flex justify-end gap-2">
                     <Link href={`/patients/${patient.id}`}>
                       <Button variant="ghost" size="sm"><Eye className="h-4 w-4" /></Button>
+                    </Link>
+                    <Link href={`/patients/${patient.id}/history`}>
+                      <Button variant="ghost" size="sm"><FileText className="h-4 w-4" /></Button>
                     </Link>
                     <Link href={`/patients/${patient.id}/edit`}>
                       <Button variant="ghost" size="sm"><Edit className="h-4 w-4" /></Button>
@@ -98,8 +114,8 @@ export function PatientList()
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
+                onClick={() => page > 1 && setPage(p => Math.max(1, p - 1))}
+                className={page === 1 ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
             {Array.from({ length: data.pagination.pages }, (_, i) => (
@@ -114,8 +130,8 @@ export function PatientList()
             ))}
             <PaginationItem>
               <PaginationNext
-                onClick={() => setPage(p => p + 1)}
-                disabled={page >= data.pagination.pages}
+                onClick={() => page < data.pagination.pages && setPage(p => p + 1)}
+                className={page >= data.pagination.pages ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
           </PaginationContent>
