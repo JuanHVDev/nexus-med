@@ -1,8 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import
-{
+import {
   LayoutDashboard,
   Users,
   Calendar,
@@ -10,9 +9,13 @@ import
   Settings,
   Stethoscope,
   Pill,
-  CreditCard
+  CreditCard,
+  Package,
+  FlaskConical,
+  ImageIcon
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Pacientes', href: '/patients', icon: Users },
@@ -20,9 +23,16 @@ const navigation = [
   { name: 'Consultas', href: '/consultations', icon: Stethoscope },
   { name: 'Recetas', href: '/prescriptions', icon: Pill },
   { name: 'Facturación', href: '/billing', icon: CreditCard },
+  { name: 'Laboratorio', href: '/lab-orders', icon: FlaskConical },
+  { name: 'Imagenología', href: '/imaging-orders', icon: ImageIcon },
   { name: 'Reportes', href: '/reports', icon: FileText },
   { name: 'Configuración', href: '/settings', icon: Settings },
 ]
+
+const adminNavigation = [
+  { name: 'Servicios', href: '/services', icon: Package },
+]
+
 interface SidebarProps
 {
   user: {
@@ -34,6 +44,8 @@ interface SidebarProps
 export function DashboardSidebar({ user }: SidebarProps)
 {
   const pathname = usePathname()
+  const isAdmin = user.role === 'ADMIN'
+  
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
       <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 border-r">
@@ -61,6 +73,31 @@ export function DashboardSidebar({ user }: SidebarProps)
                     </Link>
                   </li>
                 ))}
+                {isAdmin && (
+                  <>
+                    <li className="pt-4 pb-2">
+                      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">
+                        Administración
+                      </span>
+                    </li>
+                    {adminNavigation.map((item) => (
+                      <li key={item.name}>
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            pathname === item.href
+                              ? 'bg-slate-50 text-primary'
+                              : 'text-slate-700 hover:bg-slate-50 hover:text-primary',
+                            'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6'
+                          )}
+                        >
+                          <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                          {item.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </>
+                )}
               </ul>
             </li>
 
