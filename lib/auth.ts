@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin } from "better-auth/plugins";
 import { inferAdditionalFields } from "better-auth/client/plugins";
+import type { User } from "better-auth";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 const adapter = new PrismaPg({
@@ -70,7 +71,7 @@ export const auth = betterAuth({
     }),
   ],
   callbacks: {
-    async beforeRegister(user: any)
+    async beforeRegister(user: User & { clinicId?: string })
     {
       if (!user.clinicId)
       {
