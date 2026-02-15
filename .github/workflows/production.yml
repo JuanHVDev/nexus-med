@@ -49,10 +49,14 @@ jobs:
               env:
                   DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+            - name: Install Vercel CLI
+              run: pnpm add -g vercel
+
+            - name: Pull Vercel Environment
+              run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --git-branch=${{ github.ref_name }}
+
+            - name: Build Project
+              run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
             - name: Deploy to Vercel
-              uses: amondnet/vercel-action@v25
-              with:
-                  vercel-token: ${{ secrets.VERCEL_TOKEN }}
-                  vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-                  vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-                  vercel-args: '--prod'
+              run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
