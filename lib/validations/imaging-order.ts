@@ -6,8 +6,8 @@ export const imagingOrderCreateSchema = z.object({
   medicalNoteId: z.string().optional(),
   studyType: z.string().min(1, 'El tipo de estudio es requerido'),
   bodyPart: z.string().min(1, 'La región corporal es requerida'),
-  reason: z.string().optional(),
-  clinicalNotes: z.string().optional(),
+  reason: z.string().nullable().optional(),
+  clinicalNotes: z.string().nullable().optional(),
 })
 
 export const imagingOrderUpdateSchema = z.object({

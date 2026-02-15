@@ -11,7 +11,7 @@ export const labOrderCreateSchema = z.object({
   doctorId: z.string().min(1, 'El médico es requerido'),
   medicalNoteId: z.string().optional(),
   tests: z.array(labTestSchema).min(1, 'Seleccione al menos un estudio'),
-  instructions: z.string().optional(),
+  instructions: z.string().nullable().optional(),
 })
 
 export const labOrderUpdateSchema = z.object({
