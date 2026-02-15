@@ -24,7 +24,9 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import { Badge } from '@/components/ui/badge'
-import { Search, FileText, ChevronRight, Download } from 'lucide-react'
+import { Search, FileText, ChevronRight, Download, Loader2 } from 'lucide-react'
+import { generatePrescriptionPDF } from '@/components/prescriptions/prescription-pdf'
+import { toast } from 'sonner'
 
 interface Medication {
   name: string
@@ -158,56 +160,28 @@ export default function PrescriptionsPage() {
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => {
-                          // Simple PDF generation - just open print dialog
-                          const printWindow = window.open('', '_blank')
-                          if (printWindow) {
-                            const meds = prescription.medications.map((m, i) => 
-                              `${i + 1}. ${m.name} - ${m.dosage} (${m.route})`
-                            ).join('\n')
-                            
-                            printWindow.document.write(`
-                              <html>
-                                <head>
-                                  <title>Receta Médica</title>
-                                  <style>
-                                    body { font-family: Arial, sans-serif; padding: 40px; }
-                                    h1 { text-align: center; }
-                                    .section { margin: 20px 0; }
-                                    .medications { margin-left: 20px; }
-                                  </style>
-                                </head>
-                                <body>
-                                  <h1>Receta Médica</h1>
-                                  <div class="section">
-                                    <strong>Paciente:</strong> ${prescription.patient.firstName} ${prescription.patient.lastName}<br/>
-                                    <strong>CURP:</strong> ${prescription.patient.curp || 'N/A'}<br/>
-                                    <strong>Fecha:</strong> ${format(new Date(prescription.createdAt), 'dd/MM/yyyy')}
-                                  </div>
-                                  <div class="section">
-                                    <strong>Dr(a). ${prescription.doctor.name}</strong><br/>
-                                    ${prescription.doctor.licenseNumber ? `Cédula: ${prescription.doctor.licenseNumber}` : ''}
-                                  </div>
-                                  <div class="section">
-                                    <strong>Medicamentos:</strong>
-                                    <div class="medications">
-                                      ${meds}
-                                    </div>
-                                  </div>
-                                  ${prescription.instructions ? `
-                                  <div class="section">
-                                    <strong>Instrucciones:</strong><br/>
-                                    ${prescription.instructions}
-                                  </div>
-                                  ` : ''}
-                                  <div style="margin-top: 60px; text-align: center;">
-                                    _________________________<br/>
-                                    Firma del médico
-                                  </div>
-                                </body>
-                              </html>
-                            `)
-                            printWindow.document.close()
+                        onClick={async () => {
+                          try {
+                            const pdfBlob = await generatePrescriptionPDF({
+                              id: prescription.id,
+                              issueDate: prescription.createdAt,
+                              validUntil: prescription.validUntil,
+                              instructions: prescription.instructions,
+                              medications: prescription.medications,
+                              patient: prescription.patient,
+                              doctor: prescription.doctor,
+                            })
+                            const url = URL.createObjectURL(pdfBlob)
+                            const link = document.createElement('a')
+                            link.href = url
+                            link.download = `receta-${prescription.patient.lastName}-${format(new Date(prescription.createdAt), 'yyyy-MM-dd')}.pdf`
+                            document.body.appendChild(link)
+                            link.click()
+                            document.body.removeChild(link)
+                            URL.revokeObjectURL(url)
+                          } catch (error) {
+                            console.error('Error generating PDF:', error)
+                            toast.error('Error al generar PDF')
                           }
                         }}
                       >
