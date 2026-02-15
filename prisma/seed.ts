@@ -219,7 +219,7 @@ async function main()
   console.log(`- Admin user: admin@clinica.com / Admin123!`)
 }
 
-// @ts-expect-error
+// @ts-expect-error BigInt serialization for JSON
 BigInt.prototype.toJSON = function () { return this.toString() }
 
 main()
