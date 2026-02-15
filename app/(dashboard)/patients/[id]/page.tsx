@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Edit, ArrowLeft, Phone, Mail, Calendar, AlertCircle, FileText, Clock } from 'lucide-react'
+import { Edit, ArrowLeft, Phone, Mail, Calendar, AlertCircle, FileText, Clock, Eye } from 'lucide-react'
 export default async function PatientDetailPage({
   params
 }: {
@@ -70,6 +70,9 @@ export default async function PatientDetailPage({
           </div>
         </div>
         <div className="flex gap-2">
+          <Link href={`/patients/${patient.id}/notes`}>
+            <Button variant="outline"><FileText className="h-4 w-4 mr-2" />Notas</Button>
+          </Link>
           <Link href={`/patients/${patient.id}/history`}>
             <Button variant="outline"><FileText className="h-4 w-4 mr-2" /> Historial</Button>
           </Link>
@@ -173,8 +176,11 @@ export default async function PatientDetailPage({
       {/* Últimas Consultas */}
       {recentNotes.length > 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Últimas Consultas</CardTitle>
+            <Link href={`/patients/${patient.id}/notes/new`}>
+              <Button size="sm"><FileText className="h-4 w-4 mr-2" />Nueva Nota</Button>
+            </Link>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -184,6 +190,14 @@ export default async function PatientDetailPage({
                     <p className="font-medium">{new Date(note.createdAt).toLocaleDateString('es-MX')}</p>
                     <p className="text-sm text-muted-foreground">Dr. {note.doctor.name}</p>
                     {note.chiefComplaint && <p className="text-sm mt-1">{note.chiefComplaint}</p>}
+                  </div>
+                  <div className="flex gap-2">
+                    <Link href={`/patients/${patient.id}/notes/${note.id}`}>
+                      <Button variant="outline" size="sm"><Eye className="h-4 w-4 mr-1" />Ver</Button>
+                    </Link>
+                    <Link href={`/patients/${patient.id}/notes/${note.id}/edit`}>
+                      <Button variant="ghost" size="sm"><Edit className="h-4 w-4 mr-1" />Editar</Button>
+                    </Link>
                   </div>
                 </div>
               ))}
