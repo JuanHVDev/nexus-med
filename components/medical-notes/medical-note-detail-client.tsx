@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { ArrowLeft, User, Stethoscope, FileText, Activity, Pencil, Pill } from 'lucide-react'
+import { ArrowLeft, User, Stethoscope, FileText, Activity, Pencil, Pill, Receipt } from 'lucide-react'
 import { specialtyLabels } from '@/lib/validations/medical-note'
 import { PrescriptionForm } from '@/components/prescriptions/prescription-form'
+import { GenerateInvoiceDialog } from '@/components/billing/generate-invoice-dialog'
 
 interface Patient {
   id: string
@@ -75,9 +76,12 @@ interface MedicalNoteDetailClientProps {
 export function MedicalNoteDetailClient({ note, patientId }: MedicalNoteDetailClientProps) {
   const router = useRouter()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
   const [prescriptions, setPrescriptions] = useState(note.prescriptions || [])
 
   const hasPrescription = prescriptions.length > 0
+
+  const patientName = `${note.patient.firstName} ${note.patient.middleName || ''} ${note.patient.lastName}`.trim()
 
   return (
     <div className="space-y-6">
@@ -94,6 +98,10 @@ export function MedicalNoteDetailClient({ note, patientId }: MedicalNoteDetailCl
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setInvoiceDialogOpen(true)}>
+            <Receipt className="h-4 w-4 mr-2" />
+            Generar Factura
+          </Button>
           {!hasPrescription && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
@@ -339,6 +347,16 @@ export function MedicalNoteDetailClient({ note, patientId }: MedicalNoteDetailCl
           </CardContent>
         </Card>
       </div>
+
+      <GenerateInvoiceDialog
+        open={invoiceDialogOpen}
+        onOpenChange={setInvoiceDialogOpen}
+        medicalNoteId={note.id}
+        patientId={patientId}
+        patientName={patientName}
+        doctorName={note.doctor.name}
+        onSuccess={() => router.refresh()}
+      />
     </div>
   )
 }
