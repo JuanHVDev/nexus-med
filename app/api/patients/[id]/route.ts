@@ -1,8 +1,11 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { patientEditSchema } from "@/lib/validations/patient"
+import { patientEditSchema, patientEditInputSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
+import { z } from "zod"
+
+type PatientEditInput = z.infer<typeof patientEditInputSchema>
 
 async function getPatientOrError(id: string, clinicId: bigint)
 {
@@ -64,8 +67,8 @@ export async function PATCH(
   const body = await request.json()
   const validated = patientEditSchema.parse(body)
 
-  const dataToUpdate: any = { ...validated }
-  if (dataToUpdate.birthDate) {
+  const dataToUpdate: Record<string, unknown> = { ...validated }
+  if (dataToUpdate.birthDate && typeof dataToUpdate.birthDate === 'string') {
     dataToUpdate.birthDate = new Date(dataToUpdate.birthDate)
   }
 

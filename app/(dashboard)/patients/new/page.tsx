@@ -2,11 +2,11 @@
 import { useRouter } from 'next/navigation'
 import { PatientForm } from '@/components/patients/patient-form'
 import { toast } from 'sonner'
-import type { PatientInputFormData } from '@/lib/validations/patient'
+import type { PatientInputFormData, PatientEditInputFormData } from '@/lib/validations/patient'
 export default function NewPatientPage()
 {
   const router = useRouter()
-  const handleSubmit = async (data: PatientInputFormData) =>
+  const handleSubmit = async (data: PatientInputFormData | PatientEditInputFormData) =>
   {
     const response = await fetch('/api/patients', {
       method: 'POST',
