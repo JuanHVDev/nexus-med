@@ -8,11 +8,9 @@ jobs:
     deploy-production:
         name: Deploy to Production
         runs-on: ubuntu-latest
-
-        env:
-            VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-            VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-            VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        permissions:
+          contents: read
+          deployments: write
 
         steps:
             - name: Checkout code
@@ -22,6 +20,7 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: "20"
+                  cache: 'pnpm'
 
             - name: Install pnpm
               uses: pnpm/action-setup@v3
@@ -36,20 +35,10 @@ jobs:
               env:
                   DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-            - name: Install Vercel CLI
-              run: pnpm add --global vercel@latest
-
-            - name: Pull Vercel Environment Information
-              run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-
-            - name: Build Project Artifacts
-              run: vercel build --prod --token="$VERCEL_TOKEN"
-
-            - name: Deploy Project Artifacts to Vercel
-              run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
-
-            - name: Notify Deployment Success
-              if: success()
-              run: |
-                  echo "✅ Production deployment completed successfully!"
-                  echo "🌐 Site is live at: https://your-domain.com"
+            - name: Deploy to Vercel
+              uses: amondnet/vercel-action@v25
+              with:
+                  vercel-token: ${{ secrets.VERCEL_TOKEN }}
+                  vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+                  vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+                  vercel-args: '--prod'
