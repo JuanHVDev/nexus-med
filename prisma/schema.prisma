@@ -172,12 +172,16 @@ model MedicalHistory {
   chronicDiseases    String[] @default([])
   surgeries          String[] @default([])
   familyHistory      String?
+  personalHistory   String?
 
   smoking  Boolean @default(false)
   alcohol  Boolean @default(false)
   drugs    Boolean @default(false)
   exercise String?
   diet     String?
+
+  vitalSigns Json?
+  vitalSignsRecordedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
