@@ -79,7 +79,7 @@ export default async function MedicalNoteDetailPage({ params }: PageProps) {
       curp: note.patient.curp,
     },
     doctor: {
-      id: note.doctor.id,
+      id: note.doctor.id.toString(),
       name: note.doctor.name,
       specialty: note.doctor.specialty,
       licenseNumber: note.doctor.licenseNumber,
@@ -94,5 +94,5 @@ export default async function MedicalNoteDetailPage({ params }: PageProps) {
     vitalSigns,
   }
 
-  return <MedicalNoteDetailClient note={noteData} patientId={id} />
+  return <MedicalNoteDetailClient note={noteData} patientId={id.toString()} />
 }

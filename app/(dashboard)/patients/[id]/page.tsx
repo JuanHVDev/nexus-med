@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Edit, ArrowLeft, Phone, Mail, Calendar, AlertCircle, FileText, Clock, Eye } from 'lucide-react'
+import { Edit, ArrowLeft, Phone, Mail, Calendar, AlertCircle, FileText, Clock, Eye, Check, FlaskConical, ImageIcon } from 'lucide-react'
 export default async function PatientDetailPage({
   params
 }: {
@@ -19,7 +19,7 @@ export default async function PatientDetailPage({
 
   const now = new Date()
 
-  const [patient, lastAppointment, nextAppointment, recentNotes] = await Promise.all([
+  const [patient, lastAppointment, nextAppointment, recentNotes, labOrders, imagingOrders] = await Promise.all([
     prisma.patient.findFirst({
       where: { id: BigInt(id), clinicId: session.user.clinicId },
       include: {
@@ -47,7 +47,19 @@ export default async function PatientDetailPage({
       orderBy: { createdAt: 'desc' },
       take: 3,
       include: { doctor: { select: { name: true } } }
-    })
+    }),
+    prisma.labOrder.findMany({
+      where: { patientId: BigInt(id) },
+      orderBy: { orderDate: 'desc' },
+      take: 3,
+      include: { doctor: { select: { name: true } } }
+    }),
+    prisma.imagingOrder.findMany({
+      where: { patientId: BigInt(id) },
+      orderBy: { orderDate: 'desc' },
+      take: 3,
+      include: { doctor: { select: { name: true } } }
+    }),
   ])
 
   if (!patient) notFound()
@@ -202,6 +214,90 @@ export default async function PatientDetailPage({
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Órdenes de Laboratorio */}
+      {labOrders && labOrders.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <FlaskConical className="h-5 w-5" />
+              Órdenes de Laboratorio
+            </CardTitle>
+            <Link href={`/lab-orders?patientId=${patient.id}`}>
+              <Button size="sm" variant="outline">Ver Todas</Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {labOrders.map((order) => (
+              <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium text-sm">
+                    {order.tests && Array.isArray(order.tests) 
+                      ? order.tests.map((t: unknown) => (t as { name?: string })?.name).filter(Boolean).join(', ')
+                      : 'Estudios múltiples'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(order.orderDate).toLocaleDateString('es-MX')} • Dr. {order.doctor.name}
+                  </p>
+                </div>
+                <Badge className={
+                  order.status === 'COMPLETED' ? 'bg-green-500' :
+                  order.status === 'IN_PROGRESS' ? 'bg-blue-500' :
+                  order.status === 'CANCELLED' ? 'bg-red-500' : 'bg-yellow-500'
+                }>
+                  {order.status === 'COMPLETED' ? <Check className="h-3 w-3 mr-1" /> :
+                   order.status === 'IN_PROGRESS' ? <Clock className="h-3 w-3 mr-1" /> :
+                   order.status === 'CANCELLED' ? <AlertCircle className="h-3 w-3 mr-1" /> :
+                   <Clock className="h-3 w-3 mr-1" />}
+                  {order.status === 'COMPLETED' ? 'Completado' :
+                   order.status === 'IN_PROGRESS' ? 'En proceso' :
+                   order.status === 'CANCELLED' ? 'Cancelado' : 'Pendiente'}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Órdenes de Imagenología */}
+      {imagingOrders && imagingOrders.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5" />
+              Órdenes de Imagenología
+            </CardTitle>
+            <Link href={`/imaging-orders?patientId=${patient.id}`}>
+              <Button size="sm" variant="outline">Ver Todas</Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {imagingOrders.map((order) => (
+              <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium text-sm">{order.studyType} - {order.bodyPart}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(order.orderDate).toLocaleDateString('es-MX')} • Dr. {order.doctor.name}
+                  </p>
+                </div>
+                <Badge className={
+                  order.status === 'COMPLETED' ? 'bg-green-500' :
+                  order.status === 'IN_PROGRESS' ? 'bg-blue-500' :
+                  order.status === 'CANCELLED' ? 'bg-red-500' : 'bg-yellow-500'
+                }>
+                  {order.status === 'COMPLETED' ? <Check className="h-3 w-3 mr-1" /> :
+                   order.status === 'IN_PROGRESS' ? <Clock className="h-3 w-3 mr-1" /> :
+                   order.status === 'CANCELLED' ? <AlertCircle className="h-3 w-3 mr-1" /> :
+                   <Clock className="h-3 w-3 mr-1" />}
+                  {order.status === 'COMPLETED' ? 'Completado' :
+                   order.status === 'IN_PROGRESS' ? 'En proceso' :
+                   order.status === 'CANCELLED' ? 'Cancelado' : 'Pendiente'}
+                </Badge>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
