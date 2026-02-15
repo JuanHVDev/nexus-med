@@ -209,6 +209,115 @@ async function main()
   {
     console.log('Error creating admin user:', error instanceof Error ? error.message : String(error))
   }
+
+  // 5. Create Doctor
+  try
+  {
+    const email = 'dr.vela@clinica.com'
+    const password = 'Admin123!'
+    const hashedPassword = await hashPassword(password)
+    const doctorUser = await prisma.user.create({
+      data: {
+        id: `doctor_${Date.now()}`,
+        email: email,
+        name: 'Dr. Roberto Vela',
+        role: 'DOCTOR',
+        clinicId: clinic.id,
+        licenseNumber: 'MED12345',
+        specialty: 'Medicina General',
+        isActive: true,
+        emailVerified: true,
+      }
+    })
+    console.log("Doctor ha sido creado")
+    const account = await prisma.account.create({
+      data: {
+        id: `account_doctor_${Date.now()}`,
+        accountId: doctorUser.id,
+        providerId: 'credential',
+        userId: doctorUser.id,
+        password: hashedPassword,
+      }
+    })
+    console.log('Doctor user created:', doctorUser.email)
+    console.log(account)
+  } catch (error)
+  {
+    console.log('Error creating doctor user:', error instanceof Error ? error.message : String(error))
+  }
+
+  // 6. Create Nurse
+  try
+  {
+    const email = 'enf.garcia@clinica.com'
+    const password = 'Admin123!'
+    const hashedPassword = await hashPassword(password)
+    const nurseUser = await prisma.user.create({
+      data: {
+        id: `nurse_${Date.now()}`,
+        email: email,
+        name: 'Laura García',
+        role: 'NURSE',
+        clinicId: clinic.id,
+        licenseNumber: 'ENF54321',
+        specialty: 'Enfermería General',
+        isActive: true,
+        emailVerified: true,
+      }
+    })
+    console.log("Enfermera ha sido creada")
+    const account = await prisma.account.create({
+      data: {
+        id: `account_nurse_${Date.now()}`,
+        accountId: nurseUser.id,
+        providerId: 'credential',
+        userId: nurseUser.id,
+        password: hashedPassword,
+      }
+    })
+    console.log('Nurse user created:', nurseUser.email)
+    console.log(account)
+  } catch (error)
+  {
+    console.log('Error creating nurse user:', error instanceof Error ? error.message : String(error))
+  }
+
+  // 7. Create Receptionist
+  try
+  {
+    const email = 'recep.fernandez@clinica.com'
+    const password = 'Admin123!'
+    const hashedPassword = await hashPassword(password)
+    const receptionistUser = await prisma.user.create({
+      data: {
+        id: `receptionist_${Date.now()}`,
+        email: email,
+        name: 'Carlos Fernández',
+        role: 'RECEPTIONIST',
+        clinicId: clinic.id,
+        licenseNumber: 'REP11111',
+        specialty: 'Recepción',
+        isActive: true,
+        emailVerified: true,
+      }
+    })
+    console.log("Recepcionista ha sido creado")
+    const account = await prisma.account.create({
+      data: {
+        id: `account_receptionist_${Date.now()}`,
+        accountId: receptionistUser.id,
+        providerId: 'credential',
+        userId: receptionistUser.id,
+        password: hashedPassword,
+      }
+    })
+    console.log('Receptionist user created:', receptionistUser.email)
+    console.log(account)
+  } catch (error)
+  {
+    console.log('Error creating receptionist user:', error instanceof Error ? error.message : String(error))
+  }
+
   // Actualizar el summary al final:
   console.log('\n✅ Seed completed successfully!')
   console.log(`\nSummary:`)
@@ -217,6 +326,9 @@ async function main()
   console.log(`- 3 Services created`)
   console.log(`- 2 Patients created with medical history and emergency contacts`)
   console.log(`- Admin user: admin@clinica.com / Admin123!`)
+  console.log(`- Doctor user: dr.vela@clinica.com / Admin123!`)
+  console.log(`- Nurse user: enf.garcia@clinica.com / Admin123!`)
+  console.log(`- Receptionist user: recep.fernandez@clinica.com / Admin123!`)
 }
 
 // @ts-expect-error BigInt serialization for JSON
