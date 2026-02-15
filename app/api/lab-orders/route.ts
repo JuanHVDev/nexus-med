@@ -19,6 +19,7 @@ export async function GET(request: Request) {
     const patientId = searchParams.get('patientId')
     const status = searchParams.get('status')
     const doctorId = searchParams.get('doctorId')
+    const medicalNoteId = searchParams.get('medicalNoteId')
     const fromDate = searchParams.get('fromDate')
     const toDate = searchParams.get('toDate')
 
@@ -29,6 +30,7 @@ export async function GET(request: Request) {
     if (patientId) where.patientId = BigInt(patientId)
     if (status) where.status = status
     if (doctorId) where.doctorId = doctorId
+    if (medicalNoteId) where.medicalNoteId = BigInt(medicalNoteId)
     
     if (fromDate || toDate) {
       where.orderDate = {}
