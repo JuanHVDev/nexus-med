@@ -257,6 +257,8 @@ model MedicalNote {
   appointmentId BigInt?      @unique
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
+  specialty String?
+  type     String? @map("type")
   chiefComplaint String
   currentIllness String?
   vitalSigns     Json?
