@@ -31,7 +31,7 @@ export function DashboardHeader({ user }: HeaderProps)
     {
       await authClient.signOut()
       toast.success('Sesión cerrada')
-      router.push('/auth/login')
+      router.push('/login')
       router.refresh()
     } catch
     {

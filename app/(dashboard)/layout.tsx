@@ -12,9 +12,9 @@ export default async function DashboardLayout({
   const session = await auth.api.getSession({
     headers: await headers(),
   })
-  if (!session)
+if (!session)
   {
-    redirect('/auth/login')
+    redirect('/login')
   }
   return (
     <div className="min-h-screen bg-slate-50">
