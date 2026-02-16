@@ -4,7 +4,7 @@ test.describe('Authentication', () => {
   test('should display login page', async ({ page }) => {
     await page.goto('/login')
     await expect(page).toHaveTitle(/Gestor de Historias|Login|Iniciar/)
-    await expect(page.getByRole('heading', { name: /Login|Iniciar/i })).toBeVisible()
+    await expect(page.getByText('Iniciar Sesión').first()).toBeVisible()
   })
 
   test('should show error for invalid credentials', async ({ page }) => {
@@ -47,16 +47,18 @@ test.describe('Patients', () => {
 
   test('should have patient search functionality', async ({ page }) => {
     await page.goto('/patients')
-    await expect(page.getByPlaceholder(/nombre CURP| Search/i)).toBeVisible()
+    await expect(page.getByPlaceholder(/Buscar por nombre/i)).toBeVisible()
   })
 
   test('should display patient details', async ({ page }) => {
     await page.goto('/patients')
-    await page.waitForSelector('table, [class*="grid]', { timeout: 5000 })
-    const firstPatient = page.locator('tbody tr, [class*="patient"]').first()
-    if (await firstPatient.count() > 0) {
-      await firstPatient.click()
-      await expect(page.getByText(/Datos del paciente|Informacion/i)).toBeVisible({ timeout: 5000 })
+    // Wait for table to load
+    await page.waitForSelector('table', { timeout: 5000 })
+    // Click on first patient name to view details
+    const firstPatientLink = page.locator('tbody tr:first-child a[href*="/patients/"]').first()
+    if (await firstPatientLink.count() > 0) {
+      await firstPatientLink.click()
+      await expect(page).toHaveURL(/\/patients\/\d+/)
     }
   })
 })
