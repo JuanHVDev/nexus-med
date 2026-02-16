@@ -49,3 +49,6 @@ PLAN.md
 
 .vercel
 .env*.local
+
+playwright-report/
+test-results/

@@ -2,13 +2,24 @@
   "name": "hc-gestor",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:install": "playwright install",
+    "test:all": "pnpm test:run && pnpm test:e2e",
+    "test:db:push": "dotenv -e .env.test -- prisma db push",
+    "test:db:seed": "dotenv -e .env.test -- tsx prisma/seed-test.ts",
+    "test:db:reset": "pnpm test:db:push && pnpm test:db:seed"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -37,21 +48,30 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/coverage-v8": "4.0.18",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jsdom": "^28.1.0",
     "prisma": "^7.4.0",
     "shadcn": "^3.8.4",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
