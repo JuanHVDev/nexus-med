@@ -96,12 +96,13 @@ test.describe('Dashboard', () => {
   test('should display dashboard stats', async ({ page }) => {
     await page.goto('/dashboard')
     await expect(page.getByRole('heading', { name: /Dashboard|Inicio/i })).toBeVisible()
-    await expect(page.getByText(/Pacientes Totales|Citas Hoy|Consultas|Ingresos/i)).toBeVisible()
+    await expect(page.getByText('Pacientes Totales')).toBeVisible()
   })
 
   test('should display quick actions', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page.getByRole('link', { name: /Nuevo Paciente|Nueva Cita/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /\+ Nuevo/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /\+ Nueva/i })).toBeVisible()
   })
 })
 
