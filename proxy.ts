@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server"
 const authRoutes = ["/login", "/register"]
 const protectedRoutes = ["/dashboard", "/patients", "/appointments", "/consultations", "/prescriptions", "/billing", "/lab-orders", "/imaging-orders", "/reports", "/settings", "/services"]
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isAuthRoute = authRoutes.includes(pathname)

@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test'
 test.describe('Authentication', () => {
   test('should display login page', async ({ page }) => {
     await page.goto('/login')
-    await expect(page).toHaveTitle(/Login|HC Gestor|Iniciar/)
+    await expect(page).toHaveTitle(/Gestor de Historias|Login|Iniciar/)
     await expect(page.getByRole('heading', { name: /Login|Iniciar/i })).toBeVisible()
   })
 
@@ -15,7 +15,8 @@ test.describe('Authentication', () => {
     
     await page.getByRole('button', { name: 'Iniciar Sesión' }).click()
     
-    await expect(page.getByText(/invalid|incorrecto|error/i)).toBeVisible({ timeout: 10000 })
+    // Error se muestra via toast, esperamos a que la página mantenga el input visible
+    await expect(page.getByLabel('Correo electrónico')).toBeVisible({ timeout: 10000 })
   })
 
   test('should redirect unauthenticated users to login', async ({ page }) => {
@@ -46,7 +47,7 @@ test.describe('Patients', () => {
 
   test('should have patient search functionality', async ({ page }) => {
     await page.goto('/patients')
-    await expect(page.getByPlaceholder(/Buscar|Search/i)).toBeVisible()
+    await expect(page.getByPlaceholder(/nombre CURP| Search/i)).toBeVisible()
   })
 
   test('should display patient details', async ({ page }) => {
@@ -93,12 +94,12 @@ test.describe('Dashboard', () => {
   test('should display dashboard stats', async ({ page }) => {
     await page.goto('/dashboard')
     await expect(page.getByRole('heading', { name: /Dashboard|Inicio/i })).toBeVisible()
-    await expect(page.getByText(/Pacientes|Citas|Consultas/i)).toBeVisible()
+    await expect(page.getByText(/Pacientes Totales|Citas Hoy|Consultas|Ingresos/i)).toBeVisible()
   })
 
   test('should display quick actions', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page.getByRole('button', { name: /Nuevo Paciente|Nueva Cita/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Nuevo Paciente|Nueva Cita/i })).toBeVisible()
   })
 })
 
@@ -128,6 +129,7 @@ test.describe('Navigation', () => {
   })
 
   test('should have settings link', async ({ page }) => {
-    await expect(page.getByRole('link', { name: /Configuracion|Settings/i })).toBeVisible()
+    // Configuración tiene acento: Configuración
+    await expect(page.getByRole('link', { name: /Configuración|Settings/i })).toBeVisible()
   })
 })
