@@ -73,6 +73,9 @@ model Clinic {
   email    String?
   isActive Boolean @default(true)
 
+  workingHours       Json?
+  appointmentDuration Int?
+
   users             User[]
   patients          Patient[]
   appointments      Appointment[]
