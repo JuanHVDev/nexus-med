@@ -12,7 +12,7 @@ async function setupTestUsers() {
         name: 'Admin User',
         role: 'ADMIN',
         clinicId: 1,
-      } as any,
+      } as Record<string, unknown>,
     })
     console.log('✅ Admin user created:', adminResult.user?.email)
 
@@ -26,7 +26,7 @@ async function setupTestUsers() {
         clinicId: 1,
         specialty: 'Medicina General',
         licenseNumber: '12345678',
-      } as any,
+      } as Record<string, unknown>,
     })
     console.log('✅ Doctor user created:', doctorResult.user?.email)
 

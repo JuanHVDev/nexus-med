@@ -19,14 +19,15 @@ async function createTestUsers() {
           name: 'Admin User',
           role: 'ADMIN',
           clinicId: 1,
-        } as any,
+        } as Record<string, unknown>,
       })
       console.log('✅ Admin creado:', admin.user?.email)
-    } catch (error: any) {
-      if (error.message?.includes('already exists')) {
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      if (err.message?.includes('already exists')) {
         console.log('ℹ️ Admin ya existe')
       } else {
-        console.error('❌ Error creando admin:', error.message)
+        console.error('❌ Error creando admin:', err.message)
       }
     }
 
@@ -42,14 +43,15 @@ async function createTestUsers() {
           clinicId: 1,
           specialty: 'Medicina General',
           licenseNumber: '12345678',
-        } as any,
+        } as Record<string, unknown>,
       })
       console.log('✅ Doctor creado:', doctor.user?.email)
-    } catch (error: any) {
-      if (error.message?.includes('already exists')) {
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      if (err.message?.includes('already exists')) {
         console.log('ℹ️ Doctor ya existe')
       } else {
-        console.error('❌ Error creando doctor:', error.message)
+        console.error('❌ Error creando doctor:', err.message)
       }
     }
 
