@@ -78,9 +78,9 @@ test.describe('Authentication - E2E', () => {
       
       await page.waitForURL(/dashboard/, { timeout: 15000 })
       
-      // Use more robust selector for logout
-      await page.getByRole('button', { name: /A/i }).click()
-      await expect(page.getByText('Cerrar sesión')).toBeVisible()
+      // Use aria-label for logout
+      await page.getByRole('button', { name: /Menú de usuario/i }).click()
+      await expect(page.getByText('Cerrar sesión')).toBeVisible({ timeout: 5000 })
       await page.getByText('Cerrar sesión').click()
       
       await page.waitForURL(/login/, { timeout: 10000 })
@@ -94,8 +94,8 @@ test.describe('Authentication - E2E', () => {
       
       await page.waitForURL(/dashboard/, { timeout: 15000 })
       
-      await page.getByRole('button', { name: /A/i }).click()
-      await expect(page.getByText('Cerrar sesión')).toBeVisible()
+      await page.getByRole('button', { name: /Menú de usuario/i }).click()
+      await expect(page.getByText('Cerrar sesión')).toBeVisible({ timeout: 5000 })
       await page.getByText('Cerrar sesión').click()
       
       await page.waitForURL(/login/, { timeout: 10000 })

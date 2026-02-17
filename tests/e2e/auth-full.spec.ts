@@ -73,9 +73,9 @@ test.describe('Authentication - Full Flow', () => {
 
       await page.waitForURL(/dashboard/, { timeout: 15000 })
 
-      // Use more robust selector for logout
-      await page.getByRole('button', { name: /A/i }).click()
-      await expect(page.getByText('Cerrar sesión')).toBeVisible()
+      // Use aria-label for logout
+      await page.getByRole('button', { name: /Menú de usuario/i }).click()
+      await expect(page.getByText('Cerrar sesión')).toBeVisible({ timeout: 5000 })
       await page.getByText('Cerrar sesión').click()
       
       await page.waitForURL(/\/(auth\/)?login/, { timeout: 10000 })
