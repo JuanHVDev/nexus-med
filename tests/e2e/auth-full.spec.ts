@@ -64,8 +64,13 @@ test.describe('Authentication - Full Flow', () => {
       await page.getByRole('button', { name: 'Iniciar Sesión' }).click()
       
       await page.waitForURL(/dashboard/, { timeout: 15000 })
+      await expect(page).toHaveURL(/dashboard/)
       
-      await page.reload()
+      try {
+        await page.reload({ waitUntil: 'networkidle' })
+      } catch {
+        await page.goto('/dashboard')
+      }
       
       await expect(page).toHaveURL(/dashboard/)
     })

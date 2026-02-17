@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 // Función helper para hacer login
-async function loginAsAdmin(page: any) {
+async function loginAsAdmin(page: Page) {
   await page.goto('/login')
   await page.locator('#email').fill('admin@clinic.com')
   await page.locator('#password').fill('password123')

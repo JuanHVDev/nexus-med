@@ -43,7 +43,7 @@ test.describe('Authentication E2E - Basic Tests', () => {
     await expect(submitButton).toBeEnabled()
   })
 
-  test('should show validation error for invalid email', async ({ page }) => {
+  test('should show validation error for invalid email', async () => {
     // Skip - HTML5 validation interferes with Zod validation
     // The email field uses type="email" which triggers browser validation before Zod
     test.skip()
