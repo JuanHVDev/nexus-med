@@ -112,7 +112,6 @@ describe('Appointments API', () => {
       const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
       const response = await fetch(`/api/appointments?startDate=${startDate}&endDate=${endDate}`)
-      const data = await response.json()
 
       expect(response.ok).toBe(true)
     })

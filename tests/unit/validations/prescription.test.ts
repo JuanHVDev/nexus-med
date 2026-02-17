@@ -23,12 +23,6 @@ const validPrescription = {
   validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 }
 
-const invalidPrescription = {
-  patientId: '',
-  medicalNoteId: '',
-  medications: [],
-}
-
 describe('prescriptionSchema', () => {
   it('should validate a valid prescription', () => {
     const result = prescriptionSchema.safeParse(validPrescription)
@@ -81,6 +75,7 @@ describe('prescriptionSchema', () => {
 
   it('should accept validUntil as optional', () => {
     const { validUntil, ...prescription } = validPrescription
+    void validUntil
     const result = prescriptionSchema.safeParse(prescription)
     expect(result.success).toBe(true)
   })

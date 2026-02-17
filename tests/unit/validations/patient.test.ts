@@ -85,6 +85,9 @@ describe('patientSchema', () => {
 
   it('should accept optional fields as undefined', () => {
     const { curp, email, phone, ...patientWithoutOptional } = validPatient
+    void curp
+    void email
+    void phone
     const result = patientSchema.safeParse(patientWithoutOptional)
     expect(result.success).toBe(true)
   })

@@ -22,11 +22,6 @@ const validInvoice = {
   ],
 }
 
-const invalidInvoice = {
-  patientId: '',
-  items: [],
-}
-
 describe('invoiceSchema', () => {
   it('should validate a valid invoice', () => {
     const result = invoiceSchema.safeParse(validInvoice)

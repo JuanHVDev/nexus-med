@@ -21,18 +21,6 @@ const mockInvoices = [
   },
 ]
 
-const mockPayments = [
-  {
-    id: '1',
-    invoiceId: '1',
-    amount: 300,
-    method: 'CASH',
-    reference: 'REF001',
-    paymentDate: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-  },
-]
-
 describe('Invoices & Payments API', () => {
   const originalFetch = global.fetch
 

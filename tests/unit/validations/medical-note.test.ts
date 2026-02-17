@@ -31,12 +31,6 @@ const validMedicalNote = {
   notes: 'Seguimiento en una semana',
 }
 
-const invalidMedicalNote = {
-  patientId: '',
-  chiefComplaint: '',
-  diagnosis: '',
-}
-
 describe('medicalNoteSchema', () => {
   it('should validate a valid medical note', () => {
     const result = medicalNoteSchema.safeParse(validMedicalNote)
