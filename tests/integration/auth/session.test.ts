@@ -246,15 +246,6 @@ describe('Auth API - Session Expiration', () => {
   })
 
   it('should expire session after 7 days', async () => {
-    const expiredSession = {
-      session: {
-        id: 'session-expired',
-        token: 'expired-token',
-        expires: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      },
-      user: null,
-    }
-
     vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 401,

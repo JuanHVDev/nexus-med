@@ -4,7 +4,8 @@ import type { NextRequest } from "next/server"
 const authRoutes = ["/login", "/register"]
 const protectedRoutes = ["/dashboard", "/patients", "/appointments", "/consultations", "/prescriptions", "/billing", "/lab-orders", "/imaging-orders", "/reports", "/settings", "/services"]
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest)
+{
   const { pathname } = request.nextUrl
 
   const isAuthRoute = authRoutes.includes(pathname)
@@ -13,12 +14,14 @@ export async function proxy(request: NextRequest) {
   const sessionToken = request.cookies.get("better-auth.session_token")?.value
 
   // Redirect authenticated users away from auth routes
-  if (isAuthRoute && sessionToken) {
+  if (isAuthRoute && sessionToken)
+  {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   // Redirect unauthenticated users to login
-  if (isProtectedRoute && !sessionToken) {
+  if (isProtectedRoute && !sessionToken)
+  {
     const loginUrl = new URL("/login", request.url)
     loginUrl.searchParams.set("callbackUrl", pathname)
     return NextResponse.redirect(loginUrl)
