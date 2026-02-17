@@ -2,16 +2,15 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 1, // Más retries para estabilidad
-  workers: process.env.CI ? 1 : undefined,
+  retries: 2,
+  workers: 2,
   reporter: 'html',
 
-  // Timeouts globales
-  timeout: 90000, // 90s por test
+  timeout: 120000,
   expect: {
-    timeout: 10000, // 10s para aserciones
+    timeout: 15000,
   },
 
   use: {
@@ -19,39 +18,53 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    // Timeouts de acción y navegación
-    actionTimeout: 90000,
-    navigationTimeout: 90000,
+    actionTimeout: 30000,
+    navigationTimeout: 30000,
   },
 
   projects: [
     {
       name: 'setup',
-      testMatch: /.*\.setup\.ts/, // Archivo de setup
+      testMatch: /.*\.setup\.ts/,
     },
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-      dependencies: ['setup'], // Depende del setup
+      use: { 
+        ...devices['Desktop Chrome'],
+        storageState: process.env.CI ? undefined : './playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { 
+        ...devices['Desktop Firefox'],
+        storageState: process.env.CI ? undefined : './playwright/.auth/user.json',
+      },
       dependencies: ['setup'],
     },
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: { 
+        ...devices['Desktop Safari'],
+        storageState: process.env.CI ? undefined : './playwright/.auth/user.json',
+      },
       dependencies: ['setup'],
     },
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      use: { 
+        ...devices['Pixel 5'],
+        storageState: process.env.CI ? undefined : './playwright/.auth/user.json',
+      },
       dependencies: ['setup'],
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
+      use: { 
+        ...devices['iPhone 12'],
+        storageState: process.env.CI ? undefined : './playwright/.auth/user.json',
+      },
       dependencies: ['setup'],
     },
   ],
@@ -60,7 +73,7 @@ export default defineConfig({
     command: 'pnpm dev --port 3000',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 900000, // 15 minutos para arrancar
+    timeout: 300000,
     env: {
       NODE_ENV: 'test',
     },

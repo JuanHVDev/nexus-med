@@ -54,7 +54,7 @@ export function DashboardHeader({ user }: HeaderProps)
           {/* Profile dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full" aria-label="Menú de usuario">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-white">
                     {user.name.charAt(0).toUpperCase()}
@@ -75,11 +75,11 @@ export function DashboardHeader({ user }: HeaderProps)
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem role="menuitem">
                 <User className="mr-2 h-4 w-4" />
                 <span>Perfil</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={handleLogout} role="menuitem">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>

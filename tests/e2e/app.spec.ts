@@ -1,4 +1,6 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+
+// Use authenticated state from storageState - no need to login in beforeEach
 
 test.describe('Authentication', () => {
   test('should display login page', async ({ page }) => {
@@ -10,30 +12,32 @@ test.describe('Authentication', () => {
   test('should show error for invalid credentials', async ({ page }) => {
     await page.goto('/login')
     
-    await page.getByLabel('Correo electrónico').fill('invalid@example.com')
-    await page.getByLabel('Contraseña').fill('wrongpassword')
+    // Use ID selectors which are more robust
+    await page.locator('#email').fill('invalid@example.com')
+    await page.locator('#password').fill('wrongpassword')
     
     await page.getByRole('button', { name: 'Iniciar Sesión' }).click()
     
-    // Error se muestra via toast, esperamos a que la página mantenga el input visible
-    await expect(page.getByLabel('Correo electrónico')).toBeVisible({ timeout: 10000 })
+    // Error shown via toast, verify we're still on login page
+    await expect(page.locator('#email')).toBeVisible({ timeout: 10000 })
   })
 
   test('should redirect unauthenticated users to login', async ({ page }) => {
-    await page.goto('/dashboard')
-    await expect(page).toHaveURL(/login|signin/)
+    // Create new context without auth
+    const context = await page.context().browser()?.newContext()
+    const newPage = await context?.newPage()
+    if (newPage) {
+      await newPage.goto('/dashboard')
+      await expect(newPage).toHaveURL(/login|signin/)
+      await newPage.close()
+    } else {
+      await page.goto('/dashboard')
+      await expect(page).toHaveURL(/login|signin/)
+    }
   })
 })
 
 test.describe('Patients', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-    await page.getByLabel('Correo electrónico').fill('admin@clinic.com')
-    await page.getByLabel('Contraseña').fill('password123')
-    await page.getByRole('button', { name: 'Iniciar Sesión' }).click()
-    await page.waitForURL(/dashboard/, { timeout: 10000 })
-  })
-
   test('should display patients list', async ({ page }) => {
     await page.goto('/patients')
     await expect(page.getByRole('heading', { name: /Pacientes/i })).toBeVisible()
@@ -52,9 +56,7 @@ test.describe('Patients', () => {
 
   test('should display patient details', async ({ page }) => {
     await page.goto('/patients')
-    // Wait for table to load
     await page.waitForSelector('table', { timeout: 5000 })
-    // Click on first patient name to view details
     const firstPatientLink = page.locator('tbody tr:first-child a[href*="/patients/"]').first()
     if (await firstPatientLink.count() > 0) {
       await firstPatientLink.click()
@@ -64,14 +66,6 @@ test.describe('Patients', () => {
 })
 
 test.describe('Appointments', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-    await page.getByLabel('Correo electrónico').fill('admin@clinic.com')
-    await page.getByLabel('Contraseña').fill('password123')
-    await page.getByRole('button', { name: 'Iniciar Sesión' }).click()
-    await page.waitForURL(/dashboard/, { timeout: 10000 })
-  })
-
   test('should display appointments calendar', async ({ page }) => {
     await page.goto('/appointments')
     await expect(page.getByRole('heading', { name: /Citas|Agenda|Calendario/i })).toBeVisible()
@@ -85,14 +79,6 @@ test.describe('Appointments', () => {
 })
 
 test.describe('Dashboard', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-    await page.getByLabel('Correo electrónico').fill('admin@clinic.com')
-    await page.getByLabel('Contraseña').fill('password123')
-    await page.getByRole('button', { name: 'Iniciar Sesión' }).click()
-    await page.waitForURL(/dashboard/, { timeout: 10000 })
-  })
-
   test('should display dashboard stats', async ({ page }) => {
     await page.goto('/dashboard')
     await expect(page.getByRole('heading', { name: /Dashboard|Inicio/i })).toBeVisible()
@@ -107,23 +93,15 @@ test.describe('Dashboard', () => {
 })
 
 test.describe('Navigation', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-    await page.getByLabel('Correo electrónico').fill('admin@clinic.com')
-    await page.getByLabel('Contraseña').fill('password123')
-    await page.getByRole('button', { name: 'Iniciar Sesión' }).click()
-    await page.waitForURL(/dashboard/, { timeout: 10000 })
-  })
-
   test('should have main navigation menu', async ({ page }) => {
-    // Verificar que existe el sidebar con el nombre de la app
+    await page.goto('/dashboard')
     await expect(page.getByText('HC Gestor')).toBeVisible()
-    // Verificar enlaces del sidebar
     await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Pacientes' })).toBeVisible()
   })
 
   test('should navigate between pages', async ({ page }) => {
+    await page.goto('/dashboard')
     await page.getByRole('link', { name: /Pacientes/i }).first().click()
     await expect(page).toHaveURL(/patients/)
     
@@ -132,7 +110,7 @@ test.describe('Navigation', () => {
   })
 
   test('should have settings link', async ({ page }) => {
-    // Configuración tiene acento: Configuración
+    await page.goto('/dashboard')
     await expect(page.getByRole('link', { name: /Configuración|Settings/i })).toBeVisible()
   })
 })
