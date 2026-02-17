@@ -21,7 +21,11 @@ test.describe('Authentication - Full Flow', () => {
     })
 
     test('should show validation errors', async ({ page }) => {
-      test.skip()
+      // Test password validation (email is valid but password is too short)
+      await page.locator('#email').fill('test@clinic.com')
+      await page.locator('#password').fill('123')
+      await page.getByRole('button', { name: 'Iniciar Sesión' }).click()
+      await expect(page.getByText('al menos 8 caracteres')).toBeVisible({ timeout: 5000 })
     })
   })
 

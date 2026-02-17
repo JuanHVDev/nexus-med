@@ -44,8 +44,8 @@ test.describe('Authentication E2E - Basic Tests', () => {
   })
 
   test('should show validation error for invalid email', async ({ page }) => {
-    // Skip - el input type="email" tiene validación nativa de HTML5 que interfiere
-    // y hace difícil testear la validación de Zod
+    // Skip - HTML5 validation interferes with Zod validation
+    // The email field uses type="email" which triggers browser validation before Zod
     test.skip()
   })
 
