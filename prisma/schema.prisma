@@ -154,6 +154,7 @@ model Patient {
   zipCode String?
 
   isActive Boolean @default(true)
+  deletedAt DateTime?
   notes    String?
 
   medicalHistory    MedicalHistory?
