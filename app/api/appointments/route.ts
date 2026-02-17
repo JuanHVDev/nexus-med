@@ -87,6 +87,13 @@ export async function POST(request: Request) {
   const body = await request.json()
   const validated = appointmentSchema.parse(body)
 
+  const patient = await prisma.patient.findFirst({
+    where: { id: validated.patientId, clinicId: session.user.clinicId, deletedAt: null }
+  })
+  if (!patient) {
+    return new NextResponse("Patient not found", { status: 404 })
+  }
+
   const startTime = validated.startTime
   const endTime = validated.endTime
 

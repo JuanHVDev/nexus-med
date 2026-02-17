@@ -6,7 +6,7 @@ import { headers } from "next/headers"
 
 async function verifyPatientOwnership(patientId: string, clinicId: bigint) {
   const patient = await prisma.patient.findFirst({
-    where: { id: BigInt(patientId), clinicId }
+    where: { id: BigInt(patientId), clinicId, deletedAt: null }
   })
   if (!patient) return null
   return patient

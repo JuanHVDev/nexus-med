@@ -114,6 +114,13 @@ export async function POST(request: Request) {
 
     const { patientId, doctorId, medicalNoteId, tests, instructions } = validation.data
 
+    const patient = await prisma.patient.findFirst({
+      where: { id: BigInt(patientId), clinicId: BigInt(session.user.clinicId), deletedAt: null }
+    })
+    if (!patient) {
+      return NextResponse.json({ message: 'Patient not found' }, { status: 404 })
+    }
+
     const labOrder = await prisma.labOrder.create({
       data: {
         clinicId: BigInt(session.user.clinicId),

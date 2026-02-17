@@ -18,7 +18,7 @@ export async function DELETE(
 
   // Verificar ownership del paciente
   const patient = await prisma.patient.findFirst({
-    where: { id: BigInt(id), clinicId: BigInt(session.user.clinicId!) }
+    where: { id: BigInt(id), clinicId: BigInt(session.user.clinicId!), deletedAt: null }
   })
   
   if (!patient) {

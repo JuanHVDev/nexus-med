@@ -97,7 +97,8 @@ export async function POST(request: Request) {
   const patient = await prisma.patient.findFirst({
     where: {
       id: validated.patientId,
-      clinicId: session.user.clinicId
+      clinicId: session.user.clinicId,
+      deletedAt: null
     }
   })
 

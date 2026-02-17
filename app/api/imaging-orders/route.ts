@@ -111,6 +111,13 @@ export async function POST(request: Request) {
 
     const { patientId, doctorId, medicalNoteId, studyType, bodyPart, reason, clinicalNotes } = validation.data
 
+    const patient = await prisma.patient.findFirst({
+      where: { id: BigInt(patientId), clinicId: BigInt(session.user.clinicId), deletedAt: null }
+    })
+    if (!patient) {
+      return NextResponse.json({ message: 'Patient not found' }, { status: 404 })
+    }
+
     const imagingOrder = await prisma.imagingOrder.create({
       data: {
         clinicId: BigInt(session.user.clinicId),

@@ -7,7 +7,7 @@ import { headers } from "next/headers"
 async function getPatientOrError(id: string, clinicId: bigint)
 {
   const patient = await prisma.patient.findFirst({
-    where: { id: BigInt(id), clinicId },
+    where: { id: BigInt(id), clinicId, deletedAt: null },
     include: {
       medicalHistory: true,
       emergencyContacts: true,
@@ -100,7 +100,10 @@ export async function DELETE(
   const patient = await getPatientOrError(id, BigInt(session.user.clinicId!))
   if (patient instanceof NextResponse) return patient
 
-  await prisma.patient.delete({ where: { id: BigInt(id) } })
+  await prisma.patient.update({ 
+    where: { id: BigInt(id) },
+    data: { deletedAt: new Date() }
+  })
 
   return new NextResponse("Patient deleted", { status: 204 })
 }

@@ -17,6 +17,7 @@ export async function GET(request: Request)
 
   const where = {
     clinicId: session.user.clinicId,
+    deletedAt: null,
     OR: search ? [
       { firstName: { contains: search, mode: 'insensitive' as const } },
       { lastName: { contains: search, mode: 'insensitive' as const } },

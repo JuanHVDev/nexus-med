@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { serializeBigInt } from "@/lib/utils"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 import { z } from "zod"
@@ -13,14 +14,6 @@ const createUserSchema = z.object({
   licenseNumber: z.string().optional(),
   phone: z.string().optional(),
 })
-
-function serializeBigInt<T>(obj: T): T {
-  return JSON.parse(
-    JSON.stringify(obj, (_, value) =>
-      typeof value === 'bigint' ? value.toString() : value
-    )
-  )
-}
 
 export async function GET() {
   const headersList = await headers()

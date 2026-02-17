@@ -15,6 +15,14 @@ export async function GET(
     return new NextResponse("Unauthorized", { status: 401 })
   }
 
+  const patient = await prisma.patient.findFirst({
+    where: { id: BigInt(id), clinicId: session.user.clinicId, deletedAt: null }
+  })
+  
+  if (!patient) {
+    return new NextResponse("Patient not found", { status: 404 })
+  }
+
   const notes = await prisma.medicalNote.findMany({
     where: {
       patientId: BigInt(id),

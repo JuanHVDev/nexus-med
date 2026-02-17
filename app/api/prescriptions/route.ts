@@ -140,7 +140,7 @@ export async function POST(request: Request) {
 
     // Verify patient belongs to clinic
     const patient = await prisma.patient.findFirst({
-      where: { id: patientIdBigInt, clinicId: session.user.clinicId },
+      where: { id: patientIdBigInt, clinicId: session.user.clinicId, deletedAt: null },
     })
 
     if (!patient) {
