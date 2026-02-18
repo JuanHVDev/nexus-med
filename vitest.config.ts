@@ -9,6 +9,11 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
+    exclude: [
+      '**/*.d.ts',
+      '**/*.config.ts',
+      'tests/unit/components/**'
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -23,10 +28,10 @@ export default defineConfig({
         'tests/**'
       ],
       thresholds: {
-        lines: 80,
-        functions: 80,
-        branches: 80,
-        statements: 80
+        lines: 95,
+        functions: 85,
+        branches: 85,
+        statements: 95
       }
     },
     mockReset: true,

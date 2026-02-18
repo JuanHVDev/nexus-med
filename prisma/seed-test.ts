@@ -127,6 +127,108 @@ async function main() {
     console.log('ℹ️ Doctor user already exists or error:', error instanceof Error ? error.message : String(error))
   }
 
+  // Create NURSE user with Better-Auth credentials
+  try {
+    const email = 'nurse@clinic.com'
+    const password = 'password123'
+    const hashedPassword = await hashPassword(password)
+    
+    const nurseUser = await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: {
+        id: 'user-nurse-test',
+        email: email,
+        name: 'Enfermera Test',
+        role: 'NURSE',
+        specialty: 'Enfermería General',
+        licenseNumber: 'ENF12345',
+        clinicId: clinic.id,
+        isActive: true,
+        emailVerified: true,
+      }
+    })
+    
+    const existingNurseAccount = await prisma.account.findFirst({
+      where: {
+        providerId: 'credential',
+        userId: nurseUser.id,
+      }
+    })
+    
+    if (!existingNurseAccount) {
+      await prisma.account.create({
+        data: {
+          id: 'account-nurse-test',
+          accountId: nurseUser.id,
+          providerId: 'credential',
+          userId: nurseUser.id,
+          password: hashedPassword,
+        }
+      })
+    } else {
+      await prisma.account.update({
+        where: { id: existingNurseAccount.id },
+        data: { password: hashedPassword }
+      })
+    }
+    
+    console.log('✅ Nurse user created:', nurseUser.email)
+  } catch (error) {
+    console.log('ℹ️ Nurse user already exists or error:', error instanceof Error ? error.message : String(error))
+  }
+
+  // Create RECEPTIONIST user with Better-Auth credentials
+  try {
+    const email = 'receptionist@clinic.com'
+    const password = 'password123'
+    const hashedPassword = await hashPassword(password)
+    
+    const receptionistUser = await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: {
+        id: 'user-receptionist-test',
+        email: email,
+        name: 'Recepcionista Test',
+        role: 'RECEPTIONIST',
+        specialty: 'Recepción',
+        licenseNumber: 'REP12345',
+        clinicId: clinic.id,
+        isActive: true,
+        emailVerified: true,
+      }
+    })
+    
+    const existingReceptionistAccount = await prisma.account.findFirst({
+      where: {
+        providerId: 'credential',
+        userId: receptionistUser.id,
+      }
+    })
+    
+    if (!existingReceptionistAccount) {
+      await prisma.account.create({
+        data: {
+          id: 'account-receptionist-test',
+          accountId: receptionistUser.id,
+          providerId: 'credential',
+          userId: receptionistUser.id,
+          password: hashedPassword,
+        }
+      })
+    } else {
+      await prisma.account.update({
+        where: { id: existingReceptionistAccount.id },
+        data: { password: hashedPassword }
+      })
+    }
+    
+    console.log('✅ Receptionist user created:', receptionistUser.email)
+  } catch (error) {
+    console.log('ℹ️ Receptionist user already exists or error:', error instanceof Error ? error.message : String(error))
+  }
+
   // Create test patients
   for (let i = 0; i < 5; i++) {
     const birthDate = faker.date.birthdate({ min: 18, max: 65, mode: 'age' })
@@ -184,6 +286,8 @@ async function main() {
   console.log('📋 Test Credentials:')
   console.log('  Admin: admin@clinic.com / password123')
   console.log('  Doctor: doctor@clinic.com / password123')
+  console.log('  Nurse: nurse@clinic.com / password123')
+  console.log('  Receptionist: receptionist@clinic.com / password123')
 }
 
 main()
