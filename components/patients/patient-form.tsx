@@ -64,9 +64,9 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nombre {mode === 'create' && '*'}</FormLabel>
-                <FormControl>
-                  <Input placeholder="Juan" {...field} value={field.value ?? ''} />
-                </FormControl>
+<FormControl>
+                    <Input id="firstName" placeholder="Juan" {...field} value={field.value ?? ''} />
+                  </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -78,9 +78,9 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Apellido Paterno {mode === 'create' && '*'}</FormLabel>
-                <FormControl>
-                  <Input placeholder="Pérez" {...field} value={field.value ?? ''} />
-                </FormControl>
+<FormControl>
+                    <Input id="lastName" placeholder="Pérez" {...field} value={field.value ?? ''} />
+                  </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -92,9 +92,9 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Apellido Materno</FormLabel>
-                <FormControl>
-                  <Input placeholder="García" {...field} value={field.value ?? ''} />
-                </FormControl>
+<FormControl>
+                    <Input id="middleName" placeholder="García" {...field} value={field.value ?? ''} />
+                  </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -108,9 +108,9 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             render={({ field }) => (
               <FormItem>
                 <FormLabel>CURP</FormLabel>
-                <FormControl>
-                  <Input placeholder="XAXX010101HNEXXXA1" {...field} value={field.value ?? ''} />
-                </FormControl>
+<FormControl>
+                    <Input id="curp" placeholder="XAXX010101HNEXXXA1" {...field} value={field.value ?? ''} />
+                  </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -122,9 +122,9 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Fecha de Nacimiento {mode === 'create' && '*'}</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} value={field.value ?? ''} />
-                </FormControl>
+<FormControl>
+                    <Input id="birthDate" type="date" {...field} value={field.value ?? ''} />
+                  </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -140,7 +140,7 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
                 <FormLabel>Género {mode === 'create' && '*'}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value as string}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger id="gender">
                       <SelectValue placeholder="Seleccionar..." />
                     </SelectTrigger>
                   </FormControl>
@@ -163,7 +163,7 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
                 <FormLabel>Tipo de Sangre</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value as string}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger id="bloodType">
                       <SelectValue placeholder="Seleccionar..." />
                     </SelectTrigger>
                   </FormControl>
@@ -192,7 +192,7 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="juan@email.com" {...field} value={field.value ?? ''} />
+                  <Input id="email" type="email" placeholder="juan@email.com" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -206,7 +206,7 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
               <FormItem>
                 <FormLabel>Teléfono</FormLabel>
                 <FormControl>
-                  <Input placeholder="55 1234 5678" {...field} value={field.value ?? ''} />
+                  <Input id="phone" placeholder="55 1234 5678" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -221,7 +221,7 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             <FormItem>
               <FormLabel>Dirección</FormLabel>
               <FormControl>
-                <Input placeholder="Calle y número" {...field} value={field.value ?? ''} />
+                <Input id="address" placeholder="Calle y número" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -235,9 +235,9 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Ciudad</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ciudad de México" {...field} value={field.value ?? ''} />
-                </FormControl>
+<FormControl>
+                    <Input id="city" placeholder="Ciudad de México" {...field} value={field.value ?? ''} />
+                  </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -249,9 +249,9 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Estado</FormLabel>
-                <FormControl>
-                  <Input placeholder="CDMX" {...field} value={field.value ?? ''} />
-                </FormControl>
+<FormControl>
+                    <Input id="state" placeholder="CDMX" {...field} value={field.value ?? ''} />
+                  </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -263,9 +263,9 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Código Postal</FormLabel>
-                <FormControl>
-                  <Input placeholder="01000" {...field} value={field.value ?? ''} />
-                </FormControl>
+<FormControl>
+                    <Input id="zipCode" placeholder="01000" {...field} value={field.value ?? ''} />
+                  </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -280,6 +280,7 @@ export function PatientForm({ onSubmit, defaultValues, isLoading, mode = 'create
               <FormLabel>Notas</FormLabel>
               <FormControl>
                 <textarea
+                  id="notes"
                   className="w-full min-h-[100px] p-3 border rounded-md"
                   placeholder="Notas adicionales sobre el paciente..."
                   {...field}

@@ -175,7 +175,7 @@ export function MedicalNoteForm({
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger id="specialty">
                       <SelectValue placeholder="Seleccionar especialidad" />
                     </SelectTrigger>
                   </FormControl>
@@ -200,7 +200,7 @@ export function MedicalNoteForm({
                 <FormLabel>Tipo de Nota</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger id="type">
                       <SelectValue placeholder="Seleccionar tipo" />
                     </SelectTrigger>
                   </FormControl>
@@ -239,6 +239,7 @@ export function MedicalNoteForm({
                       <FormLabel>Motivo de consulta *</FormLabel>
                       <FormControl>
                         <Textarea 
+                          id="chiefComplaint"
                           placeholder="Descripción del motivo de consulta..." 
                           {...field} 
                           value={field.value ?? ''}
@@ -421,6 +422,7 @@ export function MedicalNoteForm({
                       <FormLabel>Diagnóstico *</FormLabel>
                       <FormControl>
                         <Textarea 
+                          id="diagnosis"
                           placeholder="Diagnóstico principal (puede incluir código CIE-10)..." 
                           {...field} 
                           value={field.value ?? ''}
@@ -468,6 +470,7 @@ export function MedicalNoteForm({
                       <FormLabel>Plan de tratamiento</FormLabel>
                       <FormControl>
                         <Textarea 
+                          id="treatment"
                           placeholder="Tratamiento indicado..." 
                           {...field} 
                           value={field.value ?? ''}

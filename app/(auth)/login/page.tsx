@@ -103,7 +103,7 @@ export default function LoginPage()
         </Suspense>
         <div className="mt-4 text-center text-sm text-muted-foreground">
           <p>¿No tienes cuenta? <a href="/register" className="text-primary hover:underline">Regístrate aquí</a></p>
-          <p className="mt-2 text-xs">Demo: admin@clinica.com / Admin123!</p>
+          <p className="mt-2 text-xs">Demo: admin@clinic.com / password123</p>
         </div>
       </CardContent>
     </Card>

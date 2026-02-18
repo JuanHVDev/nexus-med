@@ -118,7 +118,7 @@ export function AppointmentForm({ onSubmit, defaultValues, isLoading, onCancel }
                   disabled={loadingPatients}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger id="patientId">
                       <SelectValue placeholder="Seleccionar paciente" />
                     </SelectTrigger>
                   </FormControl>
@@ -147,7 +147,7 @@ export function AppointmentForm({ onSubmit, defaultValues, isLoading, onCancel }
                   disabled={loadingDoctors}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger id="doctorId">
                       <SelectValue placeholder="Seleccionar doctor" />
                     </SelectTrigger>
                   </FormControl>
@@ -173,7 +173,7 @@ export function AppointmentForm({ onSubmit, defaultValues, isLoading, onCancel }
               <FormItem>
                 <FormLabel>Fecha y hora de inicio *</FormLabel>
                 <FormControl>
-                  <Input type="datetime-local" {...field} />
+                  <Input id="startTime" type="datetime-local" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -187,7 +187,7 @@ export function AppointmentForm({ onSubmit, defaultValues, isLoading, onCancel }
               <FormItem>
                 <FormLabel>Fecha y hora de fin *</FormLabel>
                 <FormControl>
-                  <Input type="datetime-local" {...field} />
+                  <Input id="endTime" type="datetime-local" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -203,7 +203,7 @@ export function AppointmentForm({ onSubmit, defaultValues, isLoading, onCancel }
               <FormLabel>Estado</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger id="status">
                     <SelectValue placeholder="Seleccionar estado" />
                   </SelectTrigger>
                 </FormControl>
@@ -228,7 +228,7 @@ export function AppointmentForm({ onSubmit, defaultValues, isLoading, onCancel }
             <FormItem>
               <FormLabel>Motivo de la cita</FormLabel>
               <FormControl>
-                <Input placeholder="Consulta general, Seguimiento, etc." {...field} value={field.value ?? ''} />
+                <Input id="reason" placeholder="Consulta general, Seguimiento, etc." {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -242,7 +242,7 @@ export function AppointmentForm({ onSubmit, defaultValues, isLoading, onCancel }
             <FormItem>
               <FormLabel>Notas adicionales</FormLabel>
               <FormControl>
-                <Input placeholder="Notas adicionales..." {...field} value={field.value ?? ''} />
+                <Input id="notes" placeholder="Notas adicionales..." {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
