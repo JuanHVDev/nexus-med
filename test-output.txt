@@ -1,0 +1,179 @@
+
+> hc-gestor@0.1.0 test:coverage
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mD:/Nextjs/hc-gestor[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | tests/integration/http-api.test.ts[2m > [22m[2mAPI Integration Tests with Real HTTP
+[22m[39mStarting test server...
+
+ [31m❯[39m tests/unit/api/lab-orders/[id]/route.test.ts [2m([22m[2m16 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 96[2mms[22m[39m
+       [32m✓[39m should return lab order by id[32m 18[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 1[2mms[22m[39m
+       [32m✓[39m should return 404 when lab order not found[32m 1[2mms[22m[39m
+[31m       [31m×[31m should include results in response[39m[32m 30[2mms[22m[39m
+       [32m✓[39m should handle errors gracefully[32m 8[2mms[22m[39m
+       [32m✓[39m should update lab order successfully[32m 5[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 1[2mms[22m[39m
+       [32m✓[39m should return 403 for forbidden role[32m 1[2mms[22m[39m
+       [32m✓[39m should return 400 for invalid input[32m 10[2mms[22m[39m
+       [32m✓[39m should return 404 when lab order not found[32m 2[2mms[22m[39m
+       [32m✓[39m should handle errors gracefully[32m 4[2mms[22m[39m
+       [32m✓[39m should delete lab order successfully[32m 2[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 1[2mms[22m[39m
+       [32m✓[39m should return 403 for forbidden role[32m 1[2mms[22m[39m
+       [32m✓[39m should return 404 when lab order not found[32m 1[2mms[22m[39m
+       [32m✓[39m should handle errors gracefully[32m 2[2mms[22m[39m
+ [31m❯[39m tests/unit/api/medical-notes/medical-note-id.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 70[2mms[22m[39m
+[31m       [31m×[31m should return medical note by id[39m[32m 30[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 6[2mms[22m[39m
+       [32m✓[39m should return 404 when note not found[32m 1[2mms[22m[39m
+[31m       [31m×[31m should update medical note[39m[32m 26[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 1[2mms[22m[39m
+       [32m✓[39m should return 403 for forbidden role[32m 2[2mms[22m[39m
+ [31m❯[39m tests/unit/api/medical-notes/route.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 63[2mms[22m[39m
+       [32m✓[39m should return medical notes for authenticated user[32m 23[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 2[2mms[22m[39m
+       [32m✓[39m should filter by patientId[32m 8[2mms[22m[39m
+       [32m✓[39m should filter by doctorId[32m 2[2mms[22m[39m
+       [32m✓[39m should filter by date range[32m 3[2mms[22m[39m
+       [32m✓[39m should filter by search term[32m 3[2mms[22m[39m
+[31m       [31m×[31m should create medical note successfully[39m[32m 11[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 2[2mms[22m[39m
+       [32m✓[39m should return 403 for forbidden role[32m 1[2mms[22m[39m
+[31m       [31m×[31m should return 404 when patient not found[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m should update existing note when appointmentId matches[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m should update appointment status to IN_PROGRESS for new note[39m[32m 1[2mms[22m[39m
+ [31m❯[39m tests/unit/api/prescriptions/route.test.ts [2m([22m[2m13 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 110[2mms[22m[39m
+       [32m✓[39m should return prescriptions for authenticated user[32m 20[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 13[2mms[22m[39m
+       [32m✓[39m should filter by patientId[32m 6[2mms[22m[39m
+       [32m✓[39m should filter by doctorId[32m 1[2mms[22m[39m
+       [32m✓[39m should filter by search term[32m 2[2mms[22m[39m
+       [32m✓[39m should handle errors gracefully[32m 30[2mms[22m[39m
+[31m       [31m×[31m should create prescription successfully[39m[32m 18[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 1[2mms[22m[39m
+       [32m✓[39m should return 400 for invalid input[32m 2[2mms[22m[39m
+[31m       [31m×[31m should return 404 when patient not found[39m[32m 4[2mms[22m[39m
+[31m       [31m×[31m should return 404 when medical note not found[39m[32m 2[2mms[22m[39m
+       [32m✓[39m should return 400 when prescription already exists for note[32m 2[2mms[22m[39m
+[31m       [31m×[31m should handle errors gracefully[39m[32m 2[2mms[22m[39m
+ [31m❯[39m tests/unit/api/services/route.test.ts [2m([22m[2m11 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 94[2mms[22m[39m
+       [32m✓[39m should return services and categories for authenticated user[32m 18[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 2[2mms[22m[39m
+       [32m✓[39m should filter by categoryId[32m 2[2mms[22m[39m
+       [32m✓[39m should filter by specialty[32m 1[2mms[22m[39m
+       [32m✓[39m should return inactive services when active=false[32m 1[2mms[22m[39m
+       [32m✓[39m should handle errors gracefully[32m 23[2mms[22m[39m
+[31m       [31m×[31m should create a new service[39m[32m 31[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 2[2mms[22m[39m
+       [32m✓[39m should return 403 for non-allowed roles[32m 2[2mms[22m[39m
+       [32m✓[39m should return 400 for invalid input[32m 4[2mms[22m[39m
+       [32m✓[39m should handle errors gracefully[32m 4[2mms[22m[39m
+ [31m❯[39m tests/unit/api/appointments/appointment-id.test.ts [2m([22m[2m10 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 95[2mms[22m[39m
+       [32m✓[39m should return appointment by id[32m 19[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 2[2mms[22m[39m
+       [32m✓[39m should return 404 when appointment not found[32m 1[2mms[22m[39m
+       [32m✓[39m should update appointment status[32m 24[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 2[2mms[22m[39m
+[31m       [31m×[31m should return 403 for forbidden role[39m[32m 35[2mms[22m[39m
+       [32m✓[39m should return 400 for invalid time range[32m 3[2mms[22m[39m
+       [32m✓[39m should cancel appointment[32m 2[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 2[2mms[22m[39m
+       [32m✓[39m should return 404 when appointment not found[32m 1[2mms[22m[39m
+ [31m❯[39m tests/unit/api/appointments/route.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 75[2mms[22m[39m
+       [32m✓[39m should return appointments for authenticated user[32m 20[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 2[2mms[22m[39m
+       [32m✓[39m should filter by doctorId[32m 16[2mms[22m[39m
+       [32m✓[39m should filter by patientId[32m 1[2mms[22m[39m
+       [32m✓[39m should filter by status[32m 1[2mms[22m[39m
+       [32m✓[39m should filter by date range[32m 2[2mms[22m[39m
+[31m       [31m×[31m should create appointment successfully[39m[32m 19[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 4[2mms[22m[39m
+       [32m✓[39m should return 403 for forbidden role[32m 1[2mms[22m[39m
+[31m       [31m×[31m should return 404 when patient not found[39m[32m 3[2mms[22m[39m
+[31m       [31m×[31m should return 400 when end time is before start time[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m should return 409 when conflicting appointment exists[39m[32m 1[2mms[22m[39m
+ [31m❯[39m tests/unit/api/lab-orders/route.test.ts [2m([22m[2m15 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 91[2mms[22m[39m
+       [32m✓[39m should return lab orders for authenticated user[32m 20[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 1[2mms[22m[39m
+       [32m✓[39m should filter by patientId[32m 6[2mms[22m[39m
+       [32m✓[39m should filter by status[32m 1[2mms[22m[39m
+       [32m✓[39m should filter by doctorId[32m 1[2mms[22m[39m
+       [32m✓[39m should filter by medicalNoteId[32m 4[2mms[22m[39m
+       [32m✓[39m should filter by date range[32m 4[2mms[22m[39m
+[31m       [31m×[31m should include results in response[39m[32m 18[2mms[22m[39m
+       [32m✓[39m should handle errors gracefully[32m 3[2mms[22m[39m
+[31m       [31m×[31m should create lab order successfully[39m[32m 18[2mms[22m[39m
+       [32m✓[39m should return 401 when not authenticated[32m 1[2mms[22m[39m
+       [32m✓[39m should return 403 for forbidden role[32m 1[2mms[22m[39m
+       [32m✓[39m should return 400 for invalid input[32m 2[2mms[22m[39m
+[31m       [31m×[31m should return 404 when patient not found[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m should handle errors gracefully[39m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/api/imaging-orders/route.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 117[2mms[22m[39m
+ [32m✓[39m tests/integration/api-routes.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 1621[2mms[22m[39m
+     [33m[2m✓[22m[39m should import patient route handlers [33m 1456[2mms[22m[39m
+ [32m✓[39m tests/unit/validations/patient.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 94[2mms[22m[39m
+ [32m✓[39m tests/unit/api/invoices/route.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 137[2mms[22m[39m
+ [32m✓[39m tests/unit/api/invoices/[id]/route.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 96[2mms[22m[39m
+ [32m✓[39m tests/unit/api/services/[id]/route.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 123[2mms[22m[39m
+ [32m✓[39m tests/unit/api/settings/hours.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m tests/unit/api/medical-notes/[id]/route.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m tests/unit/api/services/categories/route.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m tests/unit/api/imaging-orders/[id]/route.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 99[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/route.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m tests/unit/api/lab-orders/[id]/results/route.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32m✓[39m tests/unit/api/edge-cases-business.test.ts [2m([22m[2m63 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m tests/unit/api/pagination-filters.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m tests/unit/api/appointments/calendar/route.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 89[2mms[22m[39m
+ [32m✓[39m tests/unit/api/settings/doctors.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 83[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/[id]/emergency-contacts/route.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 76[2mms[22m[39m
+ [32m✓[39m tests/unit/api/error-handling.test.ts [2m([22m[2m40 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m tests/unit/api/invoices/[id]/payments/route.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m tests/unit/api/settings/users.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m tests/unit/api/appointments/[id]/route.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/patient-id.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/[id]/history/route.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/[id]/notes/route.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m tests/unit/api/services/services.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/patient-subroutes.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m tests/unit/api/settings/clinic.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/[id]/restore/route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m tests/unit/validations/invoice.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m tests/unit/api/users/doctors/route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/utils.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/[id]/emergency-contacts/[contactId]/route.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m tests/unit/api/imaging-orders/imaging-orders.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m tests/unit/pdf/pdf-generation.test.tsx [2m([22m[2m31 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/unit/validations/prescription.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m tests/unit/validations/appointment.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/unit/validations/lab-order.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m tests/unit/validations/medical-note.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 52[2mms[22m[39m
+ [32m✓[39m tests/unit/validations/imaging-order.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m tests/unit/api/settings/settings.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m tests/integration/auth/admin.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/unit/api/prescriptions/prescriptions.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m tests/integration/flows/medical-note-history.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m tests/unit/api/patients/patients.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/unit/api/appointments/appointments.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/unit/validations/auth.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m tests/unit/api/medical-notes/medical-notes.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/integration/auth/signIn.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/unit/api/invoices/invoices.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/unit/api/lab-orders/lab-orders.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/integration/flows/appointment-calendar.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/integration/auth/session.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/integration/flows/patient-dashboard.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/unit/auth/auth-schema.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+[90mstdout[2m | tests/integration/http-api.test.ts[2m > [22m[2mAPI Integration Tests with Real HTTP
+[22m[39mStopping test server...
+
+ [32m✓[39m tests/integration/http-api.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 62426[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m8 failed[39m[22m[2m | [22m[1m[32m55 passed[39m[22m[90m (63)[39m
+[2m      Tests [22m [1m[31m21 failed[39m[22m[2m | [22m[1m[32m947 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (970)[39m
+[2m   Start at [22m 09:16:52
+[2m   Duration [22m 69.20s[2m (transform 9.32s, setup 45.51s, import 25.47s, tests 67.54s, environment 257.18s)[22m
+
