@@ -36,9 +36,17 @@ export async function GET() {
 
     return NextResponse.json({
       categories: categories.map(c => ({
-        ...c,
         id: c.id.toString(),
         clinicId: c.clinicId.toString(),
+        name: c.name,
+        description: c.description,
+        color: c.color,
+        sortOrder: c.sortOrder,
+        services: c.services.map(s => ({
+          id: s.id.toString(),
+          name: s.name,
+          isActive: s.isActive,
+        })),
       }))
     })
   } catch (error) {

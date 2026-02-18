@@ -105,5 +105,5 @@ export async function DELETE(
     data: { deletedAt: new Date() }
   })
 
-  return new NextResponse("Patient deleted", { status: 204 })
+  return new NextResponse(null, { status: 204 })
 }

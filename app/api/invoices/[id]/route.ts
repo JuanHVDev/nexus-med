@@ -19,6 +19,10 @@ export async function GET(
 
     const { id } = await params
 
+    if (!id || isNaN(Number(id))) {
+      return NextResponse.json({ message: 'Invalid invoice ID' }, { status: 400 })
+    }
+
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: BigInt(id),
@@ -118,6 +122,10 @@ export async function PUT(
     const { id } = await params
     const body = await request.json()
     const validation = invoiceUpdateSchema.safeParse(body)
+
+    if (!id || isNaN(Number(id))) {
+      return NextResponse.json({ message: 'Invalid invoice ID' }, { status: 400 })
+    }
 
     if (!validation.success) {
       return NextResponse.json(
@@ -228,6 +236,10 @@ export async function DELETE(
     }
 
     const { id } = await params
+
+    if (!id || isNaN(Number(id))) {
+      return NextResponse.json({ message: 'Invalid invoice ID' }, { status: 400 })
+    }
 
     const existing = await prisma.invoice.findFirst({
       where: {

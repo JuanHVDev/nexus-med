@@ -41,5 +41,5 @@ export async function DELETE(
     where: { id: BigInt(contactId) }
   })
 
-  return new NextResponse("Contact deleted", { status: 204 })
+  return new NextResponse(null, { status: 204 })
 }

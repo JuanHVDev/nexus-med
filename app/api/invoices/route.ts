@@ -63,6 +63,7 @@ export async function GET(request: Request) {
           payments: {
             select: {
               id: true,
+              invoiceId: true,
               amount: true,
               method: true,
               paymentDate: true,
@@ -111,9 +112,10 @@ export async function GET(request: Request) {
           total: Number(item.total),
         })),
         payments: inv.payments.map(pay => ({
-          ...pay,
           id: pay.id.toString(),
+          invoiceId: pay.invoiceId.toString(),
           amount: Number(pay.amount),
+          method: pay.method,
           paymentDate: pay.paymentDate.toISOString(),
         })),
         totalPaid: inv.payments.reduce((sum, pay) => sum + Number(pay.amount), 0),

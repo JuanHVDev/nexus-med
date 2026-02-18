@@ -152,14 +152,28 @@ export async function PATCH(
   }
 
   return NextResponse.json({
-    ...note,
     id: note.id.toString(),
     clinicId: note.clinicId.toString(),
     patientId: note.patientId.toString(),
-    appointmentId: note.appointmentId?.toString(),
+    doctorId: note.doctorId,
+    appointmentId: note.appointmentId?.toString() || null,
+    specialty: note.specialty,
+    type: note.type,
+    chiefComplaint: note.chiefComplaint,
+    currentIllness: note.currentIllness,
+    vitalSigns: note.vitalSigns,
+    physicalExam: note.physicalExam,
+    diagnosis: note.diagnosis,
+    prognosis: note.prognosis,
+    treatment: note.treatment,
+    notes: note.notes,
+    createdAt: note.createdAt.toISOString(),
+    updatedAt: note.updatedAt.toISOString(),
     patient: {
-      ...note.patient,
-      id: note.patient.id.toString()
+      id: note.patient.id.toString(),
+      firstName: note.patient.firstName,
+      lastName: note.patient.lastName,
+      middleName: note.patient.middleName,
     }
   })
 }
