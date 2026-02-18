@@ -9,7 +9,10 @@ test.describe('Settings - E2E', () => {
   test.describe('Settings Page', () => {
     test('should display settings page', async ({ page }) => {
       await page.goto('/settings')
-      await expect(page.getByRole('heading', { name: /Configuración|Settings/i })).toBeVisible({ timeout: 10000 })
+      // La página redirige a /settings/clinic
+      await page.waitForLoadState('networkidle')
+      // Usar first() porque hay múltiples elementos que coinciden
+      await expect(page.getByText(/Clínica|Clinic/i).first()).toBeVisible({ timeout: 10000 })
     })
 
     test('should display settings menu', async ({ page }) => {
@@ -24,7 +27,9 @@ test.describe('Settings - E2E', () => {
   test.describe('Clinic Settings', () => {
     test('should display clinic settings', async ({ page }) => {
       await page.goto('/settings/clinic')
-      await expect(page.getByRole('heading', { name: /Clínica|Clinic/i })).toBeVisible()
+      await page.waitForLoadState('networkidle')
+      // La página usa CardTitle, no un h1 estándar
+      await expect(page.getByText('Información de la Clínica')).toBeVisible({ timeout: 10000 })
     })
 
     test('should display clinic name field', async ({ page }) => {

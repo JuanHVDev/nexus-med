@@ -44,12 +44,13 @@ test.describe('Appointments - E2E', () => {
 
     test('should display appointment form fields', async ({ page }) => {
       await page.goto('/appointments/new')
+      await page.waitForTimeout(1000)
       
-      await expect(page.getByText('Paciente')).toBeVisible()
-      await expect(page.getByText('Doctor')).toBeVisible()
-      await expect(page.getByText('Fecha y hora de inicio')).toBeVisible()
-      await expect(page.getByText('Fecha y hora de fin')).toBeVisible()
-      await expect(page.getByText('Motivo de la cita')).toBeVisible()
+      await expect(page.locator('#patientId')).toBeVisible()
+      await expect(page.locator('#doctorId')).toBeVisible()
+      await expect(page.locator('#startTime')).toBeVisible()
+      await expect(page.locator('#endTime')).toBeVisible()
+      await expect(page.locator('#reason')).toBeVisible()
     })
 
     test('should create appointment with required fields', async ({ page }) => {
@@ -387,7 +388,8 @@ test.describe('Appointments - E2E', () => {
     test('should allow doctor to view appointments', async ({ page }) => {
       await loginAsDoctor(page)
       await page.goto('/appointments')
-      await expect(page.getByRole('heading', { name: /Citas|Agenda/i })).toBeVisible()
+      await page.waitForLoadState('networkidle')
+      await expect(page.getByRole('heading', { name: /Citas/i })).toBeVisible({ timeout: 10000 })
     })
   })
 

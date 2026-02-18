@@ -10,7 +10,19 @@ export async function loginAsAdmin(page: Page) {
 }
 
 export async function loginAsDoctor(page: Page) {
+  // Primero verificar si ya hay una sesión activa y cerrarla
   await page.goto('/login')
+  await page.waitForLoadState('networkidle')
+  
+  // Si ya estamos en dashboard, necesitamos cerrar sesión primero
+  const currentUrl = page.url()
+  if (currentUrl.includes('dashboard') || currentUrl.includes('patients')) {
+    // Click en el menú de usuario para cerrar sesión
+    await page.getByRole('button', { name: /Menú de usuario|avatar/i }).click()
+    await page.getByRole('menuitem', { name: /Cerrar Sesión|Salir|Logout/i }).click()
+    await page.waitForURL('**/login', { timeout: 10000 })
+  }
+  
   await page.locator('#email').fill('doctor@clinic.com')
   await page.locator('#password').fill('password123')
   await page.getByRole('button', { name: /Iniciar Sesión|Login|Sign in/i }).click()
@@ -31,6 +43,13 @@ export async function logout(page: Page) {
   await expect(page).toHaveURL(/login|signin/)
 }
 
+export async function selectGender(page: Page, gender: 'MALE' | 'FEMALE' | 'OTHER') {
+  // El campo gender es un combobox de shadcn/ui, no un select nativo
+  await page.locator('#gender').click()
+  const genderText = gender === 'MALE' ? 'Masculino' : gender === 'FEMALE' ? 'Femenino' : 'Otro'
+  await page.getByRole('option', { name: genderText }).click()
+}
+
 export async function createTestPatient(page: Page, options?: {
   firstName?: string
   lastName?: string
@@ -40,10 +59,14 @@ export async function createTestPatient(page: Page, options?: {
   phone?: string
 }) {
   const timestamp = Date.now()
+  // CURP formato: 4 letras + 6 dígitos + 1 letra + 2 letras + 3 letras + 2 alfanuméricos = 18 caracteres
+  const uniqueSuffix = timestamp.toString().slice(-2)
+  const defaultCurp = `TEST900115HNLRNA${uniqueSuffix}` // 18 caracteres
+  
   const patient = {
     firstName: options?.firstName || `Paciente${timestamp}`,
     lastName: options?.lastName || 'Test',
-    curp: options?.curp || `TEST${timestamp.toString().slice(0, 10)}HNLRN01`,
+    curp: options?.curp || defaultCurp,
     birthDate: options?.birthDate || '1990-01-15',
     gender: options?.gender || 'MALE',
     phone: options?.phone || '5551234567',
@@ -54,7 +77,7 @@ export async function createTestPatient(page: Page, options?: {
   await page.locator('#lastName').fill(patient.lastName)
   await page.locator('#curp').fill(patient.curp)
   await page.locator('#birthDate').fill(patient.birthDate)
-  await page.locator(`#gender`).selectOption(patient.gender)
+  await selectGender(page, patient.gender as 'MALE' | 'FEMALE' | 'OTHER')
   await page.locator('#phone').fill(patient.phone)
 
   await page.getByRole('button', { name: /Guardar|Crear|Registrar/i }).click()
