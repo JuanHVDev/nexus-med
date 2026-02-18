@@ -3,6 +3,7 @@ import {
   appointmentSchema, 
   appointmentInputSchema, 
   appointmentUpdateSchema,
+  appointmentUpdateTransform,
   appointmentFilterSchema,
   appointmentStatusEnum
 } from '@/lib/validations/appointment'
@@ -127,5 +128,101 @@ describe('appointmentFilterSchema', () => {
   it('should reject invalid status in filter', () => {
     const result = appointmentFilterSchema.safeParse({ status: 'INVALID' })
     expect(result.success).toBe(false)
+  })
+})
+
+describe('appointmentUpdateTransform', () => {
+  it('should transform patientId to BigInt', () => {
+    const result = appointmentUpdateTransform.safeParse({ patientId: '123' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.patientId).toBe(BigInt(123))
+      expect(typeof result.data.patientId).toBe('bigint')
+    }
+  })
+
+  it('should transform doctorId as string', () => {
+    const result = appointmentUpdateTransform.safeParse({ doctorId: 'user-doctor-1' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.doctorId).toBe('user-doctor-1')
+    }
+  })
+
+  it('should transform startTime to Date', () => {
+    const isoString = '2024-06-15T10:00:00.000Z'
+    const result = appointmentUpdateTransform.safeParse({ startTime: isoString })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.startTime).toBeInstanceOf(Date)
+      expect((result.data.startTime as Date).toISOString()).toBe(isoString)
+    }
+  })
+
+  it('should transform endTime to Date', () => {
+    const isoString = '2024-06-15T11:00:00.000Z'
+    const result = appointmentUpdateTransform.safeParse({ endTime: isoString })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.endTime).toBeInstanceOf(Date)
+      expect((result.data.endTime as Date).toISOString()).toBe(isoString)
+    }
+  })
+
+  it('should transform each status value', () => {
+    for (const status of appointmentStatusEnum) {
+      const result = appointmentUpdateTransform.safeParse({ status })
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.status).toBe(status)
+      }
+    }
+  })
+
+  it('should accept empty string for reason', () => {
+    const result = appointmentUpdateTransform.safeParse({ reason: '' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.reason).toBe('')
+    }
+  })
+
+  it('should accept empty string for notes', () => {
+    const result = appointmentUpdateTransform.safeParse({ notes: '' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.notes).toBe('')
+    }
+  })
+
+  it('should transform all fields populated', () => {
+    const input = {
+      patientId: '999',
+      doctorId: 'doctor-123',
+      startTime: '2024-06-15T10:00:00.000Z',
+      endTime: '2024-06-15T11:00:00.000Z',
+      status: 'CONFIRMED' as const,
+      reason: 'Follow-up appointment',
+      notes: 'Patient arrived early',
+    }
+    const result = appointmentUpdateTransform.safeParse(input)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.patientId).toBe(BigInt(999))
+      expect(result.data.doctorId).toBe('doctor-123')
+      expect(result.data.startTime).toBeInstanceOf(Date)
+      expect(result.data.endTime).toBeInstanceOf(Date)
+      expect(result.data.status).toBe('CONFIRMED')
+      expect(result.data.reason).toBe('Follow-up appointment')
+      expect(result.data.notes).toBe('Patient arrived early')
+    }
+  })
+
+  it('should transform empty object to empty result', () => {
+    const result = appointmentUpdateTransform.safeParse({})
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data).toEqual({})
+    }
   })
 })
