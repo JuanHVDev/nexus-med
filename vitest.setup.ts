@@ -1,5 +1,7 @@
 import { beforeAll, afterAll, afterEach, vi } from 'vitest'
 import '@testing-library/dom'
+import '@testing-library/jest-dom'
+import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers'
 
 global.localStorage = {
   getItem: vi.fn(),
