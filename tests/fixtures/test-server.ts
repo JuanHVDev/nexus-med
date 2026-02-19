@@ -1,6 +1,6 @@
 import { spawn } from 'child_process'
 import { fetch, agents } from 'undici'
-import { beforeAll, afterAll, vi } from 'vitest'
+import { beforeAll, afterAll } from 'vitest'
 
 let serverProcess: ReturnType<typeof spawn> | null = null
 let baseUrl = 'http://localhost:3456'
@@ -81,4 +81,6 @@ afterAll(async () => {
   await stopTestServer()
 })
 
-export default { fetch, agents }
+const testServer = { fetch, agents }
+
+export default testServer

@@ -179,7 +179,6 @@ describe('MedicalNoteForm', () => {
     })
 
     it('debe cargar plantilla de exploración física al cambiar especialidad', async () => {
-      const user = userEvent.setup()
       mockSubmit.mockResolvedValue(undefined)
       
       render(

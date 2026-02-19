@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest'
 import {
   imagingOrderCreateSchema,
@@ -42,7 +43,8 @@ describe('imaging-order validation - imagingOrderCreateSchema', () => {
   })
 
   it('should accept optional medicalNoteId', () => {
-    const { medicalNoteId, ...withoutNote } = validOrder
+    const { medicalNoteId: _, ...withoutNote } = validOrder
+    void _
     const result = imagingOrderCreateSchema.safeParse(withoutNote)
     expect(result.success).toBe(true)
   })

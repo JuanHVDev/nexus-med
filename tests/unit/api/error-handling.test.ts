@@ -1,22 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const mockPatient = {
-  id: '1',
-  clinicId: '1',
-  firstName: 'Juan',
-  lastName: 'Pérez',
-  middleName: 'Carlos',
-  curp: 'PEAJ900515HNLRRN01',
-  birthDate: new Date('1990-05-15').toISOString(),
-  gender: 'MALE',
-  bloodType: 'O_POSITIVE',
-  email: 'juan@example.com',
-  phone: '5551234567',
-  isActive: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-}
-
 describe('Patients API Error Handling', () => {
   const originalFetch = global.fetch
 
@@ -43,8 +26,6 @@ describe('Patients API Error Handling', () => {
     })
 
     it('should return 404 when patient not found', async () => {
-      const headers = { 'Content-Type': 'application/json' }
-      
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
         status: 404,

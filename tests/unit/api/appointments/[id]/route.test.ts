@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GET, PATCH, DELETE } from '@/app/api/appointments/[id]/route'
 import { NextRequest } from 'next/server'
@@ -60,8 +61,8 @@ const mockAppointment = {
 describe('Appointments [id] API Route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(auth.api.getSession).mockResolvedValue(mockSession as any)
-    vi.mocked(headers).mockResolvedValue(new Map() as any)
+    vi.mocked(auth.api.getSession).mockResolvedValue(mockSession as any as NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>)
+    vi.mocked(headers).mockResolvedValue(new Map() as any as Awaited<ReturnType<typeof headers>>)
   })
 
   describe('GET /api/appointments/[id]', () => {
@@ -104,7 +105,7 @@ describe('Appointments [id] API Route', () => {
       vi.mocked(prisma.appointment.update).mockResolvedValue({
         ...mockAppointment,
         status: 'CONFIRMED'
-      } as any)
+      } as any as Awaited<ReturnType<typeof prisma.appointment.update>>)
 
       const request = new NextRequest('http://localhost/api/appointments/1', {
         method: 'PATCH',
@@ -168,7 +169,7 @@ describe('Appointments [id] API Route', () => {
     })
 
     it('should return 400 when end time is before start time', async () => {
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(mockAppointment as any)
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(mockAppointment as any as Awaited<ReturnType<typeof prisma.appointment.findFirst>>)
 
       const request = new NextRequest('http://localhost/api/appointments/1', {
         method: 'PATCH',
@@ -188,11 +189,11 @@ describe('Appointments [id] API Route', () => {
 
   describe('DELETE /api/appointments/[id]', () => {
     it('should cancel appointment successfully', async () => {
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(mockAppointment as any)
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(mockAppointment as any as Awaited<ReturnType<typeof prisma.appointment.findFirst>>)
       vi.mocked(prisma.appointment.update).mockResolvedValue({
         ...mockAppointment,
         status: 'CANCELLED'
-      } as any)
+      } as any as Awaited<ReturnType<typeof prisma.appointment.update>>)
 
       const response = await DELETE(new NextRequest('http://localhost/api/appointments/1'), {
         params: Promise.resolve({ id: '1' })
@@ -214,7 +215,7 @@ describe('Appointments [id] API Route', () => {
     it('should return 403 for forbidden role', async () => {
       vi.mocked(auth.api.getSession).mockResolvedValue({
         user: { id: 'user-1', role: 'PATIENT', clinicId: BigInt(1) }
-      } as any)
+      } as any as NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>)
 
       const response = await DELETE(new NextRequest('http://localhost/api/appointments/1'), {
         params: Promise.resolve({ id: '1' })

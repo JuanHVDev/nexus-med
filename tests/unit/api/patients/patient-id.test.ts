@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GET, PATCH, DELETE } from '@/app/api/patients/[id]/route'
 import { NextRequest } from 'next/server'

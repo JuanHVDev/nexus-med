@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GET, POST } from '@/app/api/services/route'
 import { NextRequest } from 'next/server'
@@ -152,7 +153,6 @@ describe('Services API Route', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
 
       expect(response.status).toBe(201)
     })

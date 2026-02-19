@@ -443,7 +443,6 @@ describe('Filtering API Tests', () => {
       const response = await fetch('/api/appointments?doctorId=doc-1&status=SCHEDULED&patientId=1', {
         headers: { 'Authorization': 'Bearer mock-token' }
       })
-      const data = await response.json()
 
       expect(response.ok).toBe(true)
     })

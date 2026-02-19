@@ -1,8 +1,8 @@
 import { spawn } from 'child_process'
-import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest'
+import { afterAll, beforeAll, describe, it, expect } from 'vitest'
 
 let serverProcess: ReturnType<typeof spawn> | null = null
-let baseUrl = 'http://localhost:3456'
+const baseUrl = 'http://localhost:3456'
 let isServerRunning = false
 
 export async function startTestServer(): Promise<string> {

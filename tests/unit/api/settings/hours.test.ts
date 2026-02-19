@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GET, PUT } from '@/app/api/settings/hours/route'
 import { NextRequest } from 'next/server'
@@ -109,7 +110,6 @@ describe('Settings Hours API Route', () => {
       })
 
       const response = await PUT(request)
-      const data = await response.json()
 
       expect(response.status).toBe(200)
     })

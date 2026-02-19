@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 describe('Integration Flow - Appointment to Calendar', () => {
@@ -117,7 +118,6 @@ describe('Integration Flow - Appointment to Calendar', () => {
       body: JSON.stringify({ date: updatedDate }),
     })
 
-    const updateData = await updateResponse.json()
     expect(updateResponse.ok).toBe(true)
 
     // Fetch calendar data

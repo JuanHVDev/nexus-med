@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
-import { headers } from 'next/headers'
+import { describe, it, expect, vi } from 'vitest'
 
 const mockSession = {
   user: {

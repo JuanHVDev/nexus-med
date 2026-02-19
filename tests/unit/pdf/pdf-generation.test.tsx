@@ -340,9 +340,10 @@ describe('PDF Edge Cases', () => {
   })
 })
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { Document, Page, Text, View, StyleSheet } = require('@react-pdf/renderer')
+
 function PrescriptionDocument({ data }: { data: typeof mockPrescriptionData }) {
-  const { Document, Page, Text, View, StyleSheet } = require('@react-pdf/renderer')
-  
   const styles = StyleSheet.create({
     page: { padding: 40 },
     header: { alignItems: 'center', marginBottom: 30 },
@@ -371,8 +372,6 @@ function PrescriptionDocument({ data }: { data: typeof mockPrescriptionData }) {
 }
 
 function InvoiceDocument({ data }: { data: typeof mockInvoiceData }) {
-  const { Document, Page, Text, View, StyleSheet } = require('@react-pdf/renderer')
-  
   const styles = StyleSheet.create({
     page: { padding: 40 },
     header: { alignItems: 'center', marginBottom: 30 },

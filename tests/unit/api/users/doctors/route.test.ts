@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GET } from '@/app/api/users/doctors/route'
-import { NextRequest } from 'next/server'
 
 vi.mock('next/headers', () => ({
   headers: vi.fn(() => new Map())
