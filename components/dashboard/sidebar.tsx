@@ -15,6 +15,7 @@ import {
   ImageIcon
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ModeToggle } from '@/components/mode-toggle'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -102,13 +103,16 @@ export function DashboardSidebar({ user }: SidebarProps)
             </li>
 
             <li className="mt-auto">
-              <div className="flex items-center gap-x-4 px-2 py-3 text-sm font-semibold leading-6 text-slate-900">
-                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs text-slate-500">{user.role}</span>
-                  <span className="truncate">{user.email}</span>
+              <div className="flex items-center justify-between gap-x-4 px-2 py-3">
+                <ModeToggle />
+                <div className="flex items-center gap-x-4">
+                  <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-slate-500">{user.role}</span>
+                    <span className="text-sm truncate">{user.email}</span>
+                  </div>
                 </div>
               </div>
             </li>
