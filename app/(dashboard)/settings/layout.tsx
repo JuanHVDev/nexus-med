@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 
 const settingsNavigation = [
   { name: 'Clínica', href: '/settings/clinic', icon: Building2 },
-  { name: 'Usuarios', href: '/settings/users', icon: Users },
+  { name: 'Equipo', href: '/settings/team', icon: Users },
   { name: 'Médicos', href: '/settings/doctors', icon: UserCog },
   { name: 'Horarios', href: '/settings/hours', icon: Clock },
 ]
