@@ -44,9 +44,11 @@ import {
   Search,
   Loader2,
   FileText,
-  X
+  X,
+  Upload
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { FileUpload } from '@/components/ui/file-upload'
 
 interface LabOrder {
   id: string
@@ -58,6 +60,8 @@ interface LabOrder {
   tests: { name: string; code?: string }[]
   instructions: string | null
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  resultsFileUrl: string | null
+  resultsFileName: string | null
   patient: {
     id: string
     firstName: string
@@ -122,6 +126,8 @@ export default function LabOrdersPage() {
   const [resultsDialogOpen, setResultsDialogOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<LabOrder | null>(null)
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null)
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
+  const [uploadingOrderId, setUploadingOrderId] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     patientId: '',
@@ -222,6 +228,42 @@ export default function LabOrdersPage() {
       toast.success('Orden eliminada')
     },
     onError: () => toast.error('Error al eliminar')
+  })
+
+  const uploadFileMutation = useMutation({
+    mutationFn: async ({ id, resultsFileUrl, resultsFileName }: { id: string; resultsFileUrl: string; resultsFileName: string }) => {
+      const res = await fetch(`/api/lab-orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resultsFileUrl, resultsFileName })
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lab-orders'] })
+      setUploadDialogOpen(false)
+      setUploadingOrderId(null)
+      toast.success('Archivo guardado')
+    },
+    onError: () => toast.error('Error al guardar archivo')
+  })
+
+  const deleteFileMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/lab-orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resultsFileUrl: null, resultsFileName: null })
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lab-orders'] })
+      toast.success('Archivo eliminado')
+    },
+    onError: () => toast.error('Error al eliminar archivo')
   })
 
   const addResultsMutation = useMutation({
@@ -462,26 +504,50 @@ export default function LabOrdersPage() {
                       </Select>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {order.status !== 'COMPLETED' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenResults(order)}
-                          >
-                            <FileText className="h-4 w-4 mr-1" />
-                            Resultados
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeletingOrderId(order.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                       <div className="flex items-center justify-end gap-2">
+                         {order.resultsFileUrl ? (
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             asChild
+                           >
+                             <a href={order.resultsFileUrl} target="_blank" rel="noopener noreferrer">
+                               <FileText className="h-4 w-4 mr-1" />
+                               Ver PDF
+                             </a>
+                           </Button>
+                         ) : (
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => {
+                               setUploadingOrderId(order.id)
+                               setUploadDialogOpen(true)
+                             }}
+                           >
+                             <Upload className="h-4 w-4 mr-1" />
+                             Subir
+                           </Button>
+                         )}
+                         {order.status !== 'COMPLETED' && (
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => handleOpenResults(order)}
+                           >
+                             <FileText className="h-4 w-4 mr-1" />
+                             Resultados
+                           </Button>
+                         )}
+                         <Button
+                           variant="ghost"
+                           size="icon"
+                           onClick={() => setDeletingOrderId(order.id)}
+                         >
+                           <X className="h-4 w-4" />
+                         </Button>
+                       </div>
+                     </TableCell>
                   </TableRow>
                 ))
               )}
@@ -549,6 +615,45 @@ export default function LabOrdersPage() {
             >
               {addResultsMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Guardar Resultados
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Subir Resultados de Laboratorio</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {uploadingOrderId && (
+              <FileUpload
+                folder="lab-results"
+                accept=".pdf,.jpg,.jpeg,.png"
+                currentFile={
+                  orders?.find(o => o.id === uploadingOrderId)?.resultsFileUrl
+                    ? {
+                        url: orders.find(o => o.id === uploadingOrderId)!.resultsFileUrl!,
+                        name: orders.find(o => o.id === uploadingOrderId)!.resultsFileName || 'Archivo',
+                      }
+                    : undefined
+                }
+                onUpload={(url, fileName) => {
+                  uploadFileMutation.mutate({
+                    id: uploadingOrderId,
+                    resultsFileUrl: url,
+                    resultsFileName: fileName,
+                  })
+                }}
+                onDelete={() => {
+                  deleteFileMutation.mutate(uploadingOrderId)
+                }}
+              />
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>

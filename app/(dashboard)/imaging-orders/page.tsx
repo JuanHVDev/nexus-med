@@ -44,10 +44,14 @@ import {
   Plus,
   Search,
   Loader2,
-  X
+  X,
+  Upload,
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { STUDY_TYPES } from '@/lib/validations/imaging-order'
+import { FileUpload } from '@/components/ui/file-upload'
 
 interface ImagingOrder {
   id: string
@@ -63,6 +67,8 @@ interface ImagingOrder {
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   reportUrl: string | null
   imagesUrl: string | null
+  reportFileName: string | null
+  imagesFileName: string | null
   findings: string | null
   impression: string | null
   completedAt: string | null
@@ -96,6 +102,9 @@ export default function ImagingOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null)
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
+  const [uploadingOrder, setUploadingOrder] = useState<ImagingOrder | null>(null)
+  const [uploadType, setUploadType] = useState<'report' | 'images'>('report')
 
   const [formData, setFormData] = useState({
     patientId: '',
@@ -191,6 +200,78 @@ export default function ImagingOrdersPage() {
       toast.success('Orden eliminada')
     },
     onError: () => toast.error('Error al eliminar')
+  })
+
+  const uploadReportMutation = useMutation({
+    mutationFn: async ({ id, reportUrl, reportFileName }: { id: string; reportUrl: string; reportFileName: string }) => {
+      const res = await fetch(`/api/imaging-orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportUrl, reportFileName })
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imaging-orders'] })
+      setUploadDialogOpen(false)
+      setUploadingOrder(null)
+      toast.success('Reporte guardado')
+    },
+    onError: () => toast.error('Error al guardar reporte')
+  })
+
+  const uploadImagesMutation = useMutation({
+    mutationFn: async ({ id, imagesUrl, imagesFileName }: { id: string; imagesUrl: string; imagesFileName: string }) => {
+      const res = await fetch(`/api/imaging-orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imagesUrl, imagesFileName })
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imaging-orders'] })
+      setUploadDialogOpen(false)
+      setUploadingOrder(null)
+      toast.success('Imagenes guardadas')
+    },
+    onError: () => toast.error('Error al guardar imagenes')
+  })
+
+  const deleteReportMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/imaging-orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportUrl: null, reportFileName: null })
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imaging-orders'] })
+      toast.success('Reporte eliminado')
+    },
+    onError: () => toast.error('Error al eliminar reporte')
+  })
+
+  const deleteImagesMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/imaging-orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imagesUrl: null, imagesFileName: null })
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imaging-orders'] })
+      toast.success('Imagenes eliminadas')
+    },
+    onError: () => toast.error('Error al eliminar imagenes')
   })
 
   const filteredOrders = orders?.filter(order => {
@@ -405,14 +486,54 @@ export default function ImagingOrdersPage() {
                       </Select>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeletingOrderId(order.id)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+                       <div className="flex items-center justify-end gap-1">
+                         {order.reportUrl ? (
+                           <Button variant="ghost" size="sm" asChild>
+                             <a href={order.reportUrl} target="_blank" rel="noopener noreferrer">
+                               <FileText className="h-4 w-4" />
+                             </a>
+                           </Button>
+                         ) : (
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => {
+                               setUploadingOrder(order)
+                               setUploadType('report')
+                               setUploadDialogOpen(true)
+                             }}
+                           >
+                             <Upload className="h-4 w-4" />
+                           </Button>
+                         )}
+                         {order.imagesUrl ? (
+                           <Button variant="ghost" size="sm" asChild>
+                             <a href={order.imagesUrl} target="_blank" rel="noopener noreferrer">
+                               <ImageIcon className="h-4 w-4" />
+                             </a>
+                           </Button>
+                         ) : (
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => {
+                               setUploadingOrder(order)
+                               setUploadType('images')
+                               setUploadDialogOpen(true)
+                             }}
+                           >
+                             <ImageIcon className="h-4 w-4 opacity-50" />
+                           </Button>
+                         )}
+                         <Button
+                           variant="ghost"
+                           size="icon"
+                           onClick={() => setDeletingOrderId(order.id)}
+                         >
+                           <X className="h-4 w-4" />
+                         </Button>
+                       </div>
+                     </TableCell>
                   </TableRow>
                 ))
               )}
@@ -437,6 +558,56 @@ export default function ImagingOrdersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {uploadType === 'report' ? 'Subir Reporte' : 'Subir Imagenes'} - {uploadingOrder?.patient?.firstName} {uploadingOrder?.patient?.lastName}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <FileUpload
+              folder={uploadType === 'report' ? 'imaging-reports' : 'imaging-images'}
+              accept={uploadType === 'report' ? '.pdf' : '.jpg,.jpeg,.png'}
+              currentFile={
+                uploadType === 'report' && uploadingOrder?.reportUrl
+                  ? { url: uploadingOrder.reportUrl, name: uploadingOrder.reportFileName || 'Reporte' }
+                  : uploadType === 'images' && uploadingOrder?.imagesUrl
+                  ? { url: uploadingOrder.imagesUrl, name: uploadingOrder.imagesFileName || 'Imagenes' }
+                  : undefined
+              }
+              onUpload={(url, fileName) => {
+                if (uploadType === 'report') {
+                  uploadReportMutation.mutate({
+                    id: uploadingOrder!.id,
+                    reportUrl: url,
+                    reportFileName: fileName,
+                  })
+                } else {
+                  uploadImagesMutation.mutate({
+                    id: uploadingOrder!.id,
+                    imagesUrl: url,
+                    imagesFileName: fileName,
+                  })
+                }
+              }}
+              onDelete={() => {
+                if (uploadType === 'report') {
+                  deleteReportMutation.mutate(uploadingOrder!.id)
+                } else {
+                  deleteImagesMutation.mutate(uploadingOrder!.id)
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
