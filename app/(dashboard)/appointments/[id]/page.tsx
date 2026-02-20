@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getUserClinicId } from "@/lib/clinic"
 import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import Link from "next/link"
@@ -23,10 +24,15 @@ export default async function AppointmentDetailPage({ params }: PageProps) {
     return <div>No autorizado</div>
   }
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return <div>No autorizado</div>
+  }
+
   const appointment = await prisma.appointment.findFirst({
     where: {
       id: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     },
     include: {
       patient: true,

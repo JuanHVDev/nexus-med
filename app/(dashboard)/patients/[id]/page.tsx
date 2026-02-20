@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getUserClinicId } from '@/lib/clinic'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
@@ -17,11 +18,13 @@ export default async function PatientDetailPage({
   if (!session) throw new Error('Unauthorized')
   const { id } = await params
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) throw new Error('No clinic assigned')
   const now = new Date()
 
   const [patient, nextAppointment, recentNotes, labOrders, imagingOrders] = await Promise.all([
     prisma.patient.findFirst({
-      where: { id: BigInt(id), clinicId: session.user.clinicId },
+      where: { id: BigInt(id), clinicId },
       include: {
         medicalHistory: true,
         emergencyContacts: true,

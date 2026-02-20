@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getUserClinicId } from "@/lib/clinic"
 import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { NewMedicalNoteForm } from '../../new/new-note-form'
@@ -17,10 +18,15 @@ export default async function EditMedicalNotePage({ params }: PageProps) {
     return <div>No autorizado</div>
   }
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return <div>No autorizado</div>
+  }
+
   const patient = await prisma.patient.findFirst({
     where: {
       id: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     }
   })
 
@@ -32,7 +38,7 @@ export default async function EditMedicalNotePage({ params }: PageProps) {
     where: {
       id: BigInt(noteId),
       patientId: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     }
   })
 
@@ -46,7 +52,7 @@ export default async function EditMedicalNotePage({ params }: PageProps) {
       where: {
         id: note.appointmentId,
         patientId: BigInt(id),
-        clinicId: session.user.clinicId
+        clinicId
       }
     })
   }

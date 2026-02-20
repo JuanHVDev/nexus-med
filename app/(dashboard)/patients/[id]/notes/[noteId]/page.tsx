@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getUserClinicId } from "@/lib/clinic"
 import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { MedicalNoteDetailClient } from "@/components/medical-notes/medical-note-detail-client"
@@ -17,11 +18,16 @@ export default async function MedicalNoteDetailPage({ params }: PageProps) {
     return <div>No autorizado</div>
   }
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return <div>No autorizado</div>
+  }
+
   const note = await prisma.medicalNote.findFirst({
     where: {
       id: BigInt(noteId),
       patientId: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     },
     include: {
       patient: true,

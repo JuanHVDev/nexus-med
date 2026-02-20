@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { 
   Table,
@@ -77,6 +77,7 @@ interface Summary {
 }
 
 export default function BillingPage() {
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -95,6 +96,11 @@ export default function BillingPage() {
       return res.json()
     }
   })
+
+  const handleInvoiceCreated = () => {
+    setDialogOpen(false)
+    queryClient.invalidateQueries({ queryKey: ['invoices'] })
+  }
 
   const invoices = data?.data || []
   const pagination = data?.pagination
@@ -131,12 +137,12 @@ export default function BillingPage() {
               Nueva Factura
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[700px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Nueva Factura</DialogTitle>
+              <DialogTitle className="text-xl">Nueva Factura</DialogTitle>
             </DialogHeader>
             <InvoiceForm 
-              onSuccess={() => setDialogOpen(false)} 
+              onSuccess={handleInvoiceCreated} 
               onCancel={() => setDialogOpen(false)}
             />
           </DialogContent>
