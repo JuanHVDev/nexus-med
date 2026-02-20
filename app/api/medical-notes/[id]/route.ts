@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { medicalNoteUpdateTransform } from "@/lib/validations/medical-note"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
+import { logAudit } from "@/lib/audit"
 
 export async function GET(
   request: Request,
@@ -38,8 +39,15 @@ export async function GET(
   })
 
   if (!note) {
-    return new NextResponse("Nota médica no encontrada", { status: 404 })
+    return new NextResponse("Nota medica no encontrada", { status: 404 })
   }
+
+  await logAudit(session.user.id, {
+    action: 'READ',
+    entityType: 'MedicalNote',
+    entityId: id,
+    entityName: `Nota medica - ${note.patient.firstName} ${note.patient.lastName}`,
+  })
 
   return NextResponse.json({
     id: note.id.toString(),
@@ -157,6 +165,13 @@ export async function PATCH(
       data: { status: "COMPLETED" }
     })
   }
+
+  await logAudit(session.user.id, {
+    action: 'UPDATE',
+    entityType: 'MedicalNote',
+    entityId: id,
+    entityName: `Nota medica - ${note.patient.firstName} ${note.patient.lastName}`,
+  })
 
   return NextResponse.json({
     id: note.id.toString(),

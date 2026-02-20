@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { labOrderUpdateSchema } from '@/lib/validations/lab-order'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(
   request: Request,
@@ -56,6 +57,13 @@ export async function GET(
     if (!labOrder) {
       return NextResponse.json({ message: 'Lab order not found' }, { status: 404 })
     }
+
+    await logAudit(session.user.id, {
+      action: 'READ',
+      entityType: 'LabOrder',
+      entityId: id,
+      entityName: `Orden de laboratorio - ${labOrder.patient.firstName} ${labOrder.patient.lastName}`,
+    })
 
     return NextResponse.json({
       ...labOrder,
@@ -160,6 +168,13 @@ export async function PUT(
       },
     })
 
+    await logAudit(session.user.id, {
+      action: 'UPDATE',
+      entityType: 'LabOrder',
+      entityId: id,
+      entityName: `Orden de laboratorio - ${labOrder.patient.firstName} ${labOrder.patient.lastName}`,
+    })
+
     return NextResponse.json({
       ...labOrder,
       id: labOrder.id.toString(),
@@ -225,6 +240,12 @@ export async function DELETE(
 
     await prisma.labOrder.delete({
       where: { id: BigInt(id) },
+    })
+
+    await logAudit(session.user.id, {
+      action: 'DELETE',
+      entityType: 'LabOrder',
+      entityId: id,
     })
 
     return NextResponse.json({ message: 'Lab order deleted' })

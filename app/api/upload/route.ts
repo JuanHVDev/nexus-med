@@ -21,8 +21,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No se proporciono archivo' }, { status: 400 })
     }
 
-    if (!folder || !['lab-results', 'imaging-reports', 'imaging-images'].includes(folder)) {
-      return NextResponse.json({ error: 'Carpeta no valida' }, { status: 400 })
+    const validFolders = ['lab-results', 'imaging-reports', 'imaging-images', 'patient-photos'] as const
+    type FolderType = typeof validFolders[number]
+    
+    if (!folder || !validFolders.includes(folder as FolderType)) {
+      return NextResponse.json({ error: 'Carpeta no valida. Opciones: lab-results, imaging-reports, imaging-images, patient-photos' }, { status: 400 })
     }
 
     const validation = validateFile(file)

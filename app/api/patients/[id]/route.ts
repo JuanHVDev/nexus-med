@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { patientEditSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
+import { logAudit } from "@/lib/audit"
 
 async function getPatientOrError(id: string, clinicId: bigint)
 {
@@ -34,6 +35,14 @@ export async function GET(
   const { id } = await params
   const patient = await getPatientOrError(id, clinicId)
   if (patient instanceof NextResponse) return patient
+
+  const patientName = `${patient.firstName} ${patient.lastName}`
+  await logAudit(session.user.id, {
+    action: 'READ',
+    entityType: 'Patient',
+    entityId: id,
+    entityName: patientName,
+  })
 
   return NextResponse.json({
     ...patient,
@@ -81,6 +90,13 @@ export async function PATCH(
     data: dataToUpdate
   })
 
+  await logAudit(session.user.id, {
+    action: 'UPDATE',
+    entityType: 'Patient',
+    entityId: id,
+    entityName: `${updated.firstName} ${updated.lastName}`,
+  })
+
   return NextResponse.json({
     ...updated,
     id: updated.id.toString(),
@@ -110,9 +126,18 @@ export async function DELETE(
   const patient = await getPatientOrError(id, clinicId)
   if (patient instanceof NextResponse) return patient
 
+  const patientName = `${patient.firstName} ${patient.lastName}`
+
   await prisma.patient.update({ 
     where: { id: BigInt(id) },
     data: { deletedAt: new Date() }
+  })
+
+  await logAudit(session.user.id, {
+    action: 'DELETE',
+    entityType: 'Patient',
+    entityId: id,
+    entityName: patientName,
   })
 
   return new NextResponse(null, { status: 204 })

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { imagingOrderUpdateSchema } from '@/lib/validations/imaging-order'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(
   request: Request,
@@ -55,6 +56,13 @@ export async function GET(
     if (!imagingOrder) {
       return NextResponse.json({ message: 'Imaging order not found' }, { status: 404 })
     }
+
+    await logAudit(session.user.id, {
+      action: 'READ',
+      entityType: 'ImagingOrder',
+      entityId: id,
+      entityName: `Orden de imagenologia - ${imagingOrder.patient.firstName} ${imagingOrder.patient.lastName}`,
+    })
 
     return NextResponse.json({
       ...imagingOrder,
@@ -160,6 +168,13 @@ export async function PUT(
       },
     })
 
+    await logAudit(session.user.id, {
+      action: 'UPDATE',
+      entityType: 'ImagingOrder',
+      entityId: id,
+      entityName: `Orden de imagenologia - ${imagingOrder.patient.firstName} ${imagingOrder.patient.lastName}`,
+    })
+
     return NextResponse.json({
       ...imagingOrder,
       id: imagingOrder.id.toString(),
@@ -221,6 +236,12 @@ export async function DELETE(
 
     await prisma.imagingOrder.delete({
       where: { id: BigInt(id) },
+    })
+
+    await logAudit(session.user.id, {
+      action: 'DELETE',
+      entityType: 'ImagingOrder',
+      entityId: id,
     })
 
     return NextResponse.json({ message: 'Imaging order deleted' })

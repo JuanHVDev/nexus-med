@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { invoiceUpdateSchema } from '@/lib/validations/invoice'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(
   request: Request,
@@ -53,6 +54,13 @@ export async function GET(
     if (!invoice) {
       return NextResponse.json({ message: 'Invoice not found' }, { status: 404 })
     }
+
+    await logAudit(session.user.id, {
+      action: 'READ',
+      entityType: 'Invoice',
+      entityId: id,
+      entityName: `Factura #${invoice.clinicInvoiceNumber}`,
+    })
 
     const totalPaid = invoice.payments.reduce((sum, pay) => sum + Number(pay.amount), 0)
 
@@ -186,6 +194,13 @@ export async function PUT(
       },
     })
 
+    await logAudit(session.user.id, {
+      action: 'UPDATE',
+      entityType: 'Invoice',
+      entityId: id,
+      entityName: `Factura #${invoice.clinicInvoiceNumber}`,
+    })
+
     return NextResponse.json({
       id: invoice.id.toString(),
       clinicId: invoice.clinicId.toString(),
@@ -287,6 +302,13 @@ export async function DELETE(
 
     await prisma.invoice.delete({
       where: { id: BigInt(id) },
+    })
+
+    await logAudit(session.user.id, {
+      action: 'DELETE',
+      entityType: 'Invoice',
+      entityId: id,
+      entityName: `Factura #${existing.clinicInvoiceNumber}`,
     })
 
     return NextResponse.json({ message: 'Invoice deleted' })

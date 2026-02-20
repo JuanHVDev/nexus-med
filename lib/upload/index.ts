@@ -43,7 +43,7 @@ export function validateFile(file: File): { valid: boolean; error?: string } {
 
 export async function uploadFile(
   file: File,
-  folder: 'lab-results' | 'imaging-reports' | 'imaging-images'
+  folder: 'lab-results' | 'imaging-reports' | 'imaging-images' | 'patient-photos'
 ): Promise<UploadResult> {
   const validation = validateFile(file)
   if (!validation.valid) {
