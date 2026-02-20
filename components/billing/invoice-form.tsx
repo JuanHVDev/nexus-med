@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, X, Loader2, Search } from 'lucide-react'
+import { Plus, X, Loader2, Search, Package } from 'lucide-react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { invoiceInputSchema, type InvoiceInputFormData } from '@/lib/validations/invoice'
 
@@ -41,7 +42,7 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
   const [patientSearch, setPatientSearch] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 
-  const { register, control, handleSubmit, watch, reset } = useForm<InvoiceInputFormData>({
+  const { register, control, handleSubmit, watch, reset } = useForm({
     resolver: zodResolver(invoiceInputSchema),
     defaultValues: {
       items: [{ description: '', quantity: 1, unitPrice: 0, discount: 0 }],
@@ -53,7 +54,7 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
     name: 'items'
   })
 
-  const watchItems = watch('items')
+  const watchItems = watch('items') as InvoiceInputFormData['items']
 
   useEffect(() => {
     fetch('/api/services')
@@ -87,27 +88,43 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
     }, 0)
   }
 
-  const onSubmit = async (data: InvoiceInputFormData) => {
+  const onSubmit = async (data: unknown) => {
+    const formData = data as InvoiceInputFormData
+    
     if (!selectedPatient) {
       toast.error('Selecciona un paciente')
+      return
+    }
+
+    // Validate items have description and price
+    const hasInvalidItems = formData.items.some(item => !item.description || item.unitPrice <= 0)
+    if (hasInvalidItems) {
+      toast.error('Todos los items deben tener descripción y precio mayor a 0')
       return
     }
 
     setIsSubmitting(true)
 
     try {
+      const payload = {
+        patientId: selectedPatient.id,
+        items: formData.items,
+        notes: formData.notes,
+      }
+      
+      console.log('Sending invoice payload:', payload)
+      
       const response = await fetch('/api/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          patientId: selectedPatient.id,
-        })
+        body: JSON.stringify(payload),
       })
 
+      const result = await response.json()
+      console.log('Invoice response:', result)
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Error al crear factura')
+        throw new Error(result.message || 'Error al crear factura')
       }
 
       toast.success('Factura creada correctamente')
@@ -115,6 +132,7 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
       setSelectedPatient(null)
       onSuccess?.()
     } catch (error) {
+      console.error('Invoice error:', error)
       toast.error(error instanceof Error ? error.message : 'Error al crear factura')
     } finally {
       setIsSubmitting(false)
@@ -185,24 +203,33 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Servicios</CardTitle>
           <div className="flex gap-2">
-            <select
-              className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-              onChange={(e) => {
-                const service = services.find(s => s.id === e.target.value)
-                if (service) {
-                  addServiceToItems(service)
-                  e.target.value = ''
-                }
-              }}
-              defaultValue=""
-            >
-              <option value="" disabled>Agregar servicio...</option>
-              {services.map(service => (
-                <option key={service.id} value={service.id}>
-                  {service.name} - ${service.basePrice}
-                </option>
-              ))}
-            </select>
+            {services.length > 0 ? (
+              <select
+                className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                onChange={(e) => {
+                  const service = services.find(s => s.id === e.target.value)
+                  if (service) {
+                    addServiceToItems(service)
+                    e.target.value = ''
+                  }
+                }}
+                defaultValue=""
+              >
+                <option value="" disabled>Agregar servicio...</option>
+                {services.map(service => (
+                  <option key={service.id} value={service.id}>
+                    {service.name} - ${service.basePrice}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Link href="/services">
+                <Button type="button" variant="outline" size="sm">
+                  <Package className="h-4 w-4 mr-2" />
+                  Crear servicios
+                </Button>
+              </Link>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
