@@ -22,13 +22,6 @@ export const registerSchema = z.object({
       "La contraseña debe contener al menos una mayúscula, una minúscula y un número"
     ),
   confirmPassword: z.string({ error: "Confirma tu contraseña" }),
-  role: z.enum(["DOCTOR", "NURSE", "RECEPTIONIST"] as const, {
-    error: "Selecciona un rol válido",
-  }),
-  clinicId: z.string({ error: "Debes seleccionar una clínica" }),
-  licenseNumber: z.string().optional(),
-  specialty: z.string().optional(),
-  phone: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden",
   path: ["confirmPassword"],

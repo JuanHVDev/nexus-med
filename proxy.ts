@@ -13,7 +13,7 @@ const protectedRoutes = [
   "/settings",
 ];
 
-const publicRoutes = ["/login", "/register"];
+const publicRoutes = ["/login", "/register", "/invitations"];
 
 export async function proxy(request: NextRequest)
 {
