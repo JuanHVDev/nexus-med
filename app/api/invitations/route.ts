@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getUserClinic } from "@/lib/clinic"
+import { sendInvitationEmail } from "@/lib/email/send-invitation"
 import { NextRequest, NextResponse } from "next/server"
 import { headers } from "next/headers"
 import { randomUUID } from "crypto"
@@ -135,8 +136,20 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // TODO: Enviar email con el link de invitación
-    // El link sería: ${process.env.NEXT_PUBLIC_APP_URL}/invitations/${token}
+    // Enviar email con el link de invitación
+    try {
+      await sendInvitationEmail({
+        email,
+        token,
+        clinicName: userClinic.clinic.name,
+        role,
+        invitedByName: session.user.name,
+      })
+    } catch (emailError) {
+      console.error("Error sending invitation email:", emailError)
+      // No fallamos la request si el email falla, solo lo registramos
+      // La invitación ya fue creada y puede ser reenviada
+    }
 
     return NextResponse.json({
       success: true,

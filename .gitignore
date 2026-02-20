@@ -54,3 +54,4 @@ playwright-report/
 test-results/
 .agent
 Plan_de_tests.md
+PLAN_DESIGN.md
