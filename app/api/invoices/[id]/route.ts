@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import { getUserClinicId } from '@/lib/clinic'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
@@ -13,7 +14,12 @@ export async function GET(
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
@@ -26,7 +32,7 @@ export async function GET(
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: BigInt(id),
-        clinicId: BigInt(session.user.clinicId),
+        clinicId: BigInt(clinicId),
       },
       include: {
         patient: true,
@@ -115,7 +121,12 @@ export async function PUT(
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
@@ -137,7 +148,7 @@ export async function PUT(
     const existing = await prisma.invoice.findFirst({
       where: {
         id: BigInt(id),
-        clinicId: BigInt(session.user.clinicId),
+        clinicId: BigInt(clinicId),
       },
     })
 
@@ -231,7 +242,12 @@ export async function DELETE(
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
@@ -244,7 +260,7 @@ export async function DELETE(
     const existing = await prisma.invoice.findFirst({
       where: {
         id: BigInt(id),
-        clinicId: BigInt(session.user.clinicId),
+        clinicId: BigInt(clinicId),
       },
       include: {
         payments: true,

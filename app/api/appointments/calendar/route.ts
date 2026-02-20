@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
@@ -17,8 +18,11 @@ export async function GET(request: Request) {
     return new NextResponse("Fechas de inicio y fin requeridas", { status: 400 })
   }
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("Clinic not found", { status: 403 })
+
   const where: Record<string, unknown> = {
-    clinicId: session.user.clinicId,
+    clinicId,
     startTime: {
       gte: new Date(start),
       lte: new Date(end)

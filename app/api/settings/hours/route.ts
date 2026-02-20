@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { serializeBigInt } from "@/lib/utils"
 import { NextResponse } from "next/server"
@@ -21,16 +22,17 @@ export async function GET() {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
   
-  if (!session) {
+  if (!session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 })
   }
 
-  if (!session.user.clinicId) {
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
     return new NextResponse("Clinic not found", { status: 404 })
   }
 
   const clinic = await prisma.clinic.findUnique({
-    where: { id: session.user.clinicId },
+    where: { id: clinicId },
     select: {
       workingHours: true,
       appointmentDuration: true,
@@ -58,16 +60,21 @@ export async function PUT(request: Request) {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
   
-  if (!session) {
+  if (!session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 })
   }
 
-  if (!session.user.clinicId) {
+  const [clinicId, role] = await Promise.all([
+    getUserClinicId(session.user.id),
+    getUserRole(session.user.id),
+  ])
+
+  if (!clinicId) {
     return new NextResponse("Clinic not found", { status: 404 })
   }
 
   // Only admins can update hours
-  if (session.user.role !== "ADMIN") {
+  if (role !== "ADMIN") {
     return new NextResponse("Forbidden", { status: 403 })
   }
 
@@ -76,7 +83,7 @@ export async function PUT(request: Request) {
     const validated = hoursSchema.parse(body)
 
     const clinic = await prisma.clinic.update({
-      where: { id: session.user.clinicId },
+      where: { id: clinicId },
       data: {
         workingHours: validated.workingHours,
         appointmentDuration: validated.appointmentDuration,

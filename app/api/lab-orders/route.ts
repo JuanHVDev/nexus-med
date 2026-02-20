@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import { getUserClinicId, getUserRole } from '@/lib/clinic'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
@@ -10,8 +11,13 @@ export async function GET(request: Request) {
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
+      return NextResponse.json({ message: 'No clinic found' }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -23,7 +29,7 @@ export async function GET(request: Request) {
     const toDate = searchParams.get('toDate')
 
     const where: Record<string, unknown> = {
-      clinicId: BigInt(session.user.clinicId),
+      clinicId: BigInt(clinicId),
     }
 
     if (patientId) where.patientId = BigInt(patientId)
@@ -93,12 +99,18 @@ export async function POST(request: Request) {
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
+      return NextResponse.json({ message: 'No clinic found' }, { status: 403 })
+    }
+
     const allowedRoles = ['ADMIN', 'DOCTOR']
-    if (!allowedRoles.includes(session.user.role)) {
+    const userRole = await getUserRole(session.user.id)
+    if (!userRole || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
 
@@ -115,7 +127,7 @@ export async function POST(request: Request) {
     const { patientId, doctorId, medicalNoteId, tests, instructions } = validation.data
 
     const patient = await prisma.patient.findFirst({
-      where: { id: BigInt(patientId), clinicId: BigInt(session.user.clinicId), deletedAt: null }
+      where: { id: BigInt(patientId), clinicId: BigInt(clinicId), deletedAt: null }
     })
     if (!patient) {
       return NextResponse.json({ message: 'Patient not found' }, { status: 404 })
@@ -123,7 +135,7 @@ export async function POST(request: Request) {
 
     const labOrder = await prisma.labOrder.create({
       data: {
-        clinicId: BigInt(session.user.clinicId),
+        clinicId: BigInt(clinicId),
         patientId: BigInt(patientId),
         doctorId: doctorId,
         medicalNoteId: medicalNoteId ? BigInt(medicalNoteId) : null,

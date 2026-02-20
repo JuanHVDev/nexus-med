@@ -1,8 +1,9 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getUserClinicId } from '@/lib/clinic'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { invoiceInputSchema } from '@/lib/validations/invoice'
+import { invoiceBaseSchema } from '@/lib/validations/invoice'
 
 export async function GET(request: Request) {
   try {
@@ -10,8 +11,13 @@ export async function GET(request: Request) {
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
+      return NextResponse.json({ message: 'No clinic assigned' }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -23,7 +29,7 @@ export async function GET(request: Request) {
     const endDate = searchParams.get('endDate')
 
     const where: Record<string, unknown> = {
-      clinicId: BigInt(session.user.clinicId),
+      clinicId,
     }
 
     if (patientId) {
@@ -140,14 +146,22 @@ export async function POST(request: Request) {
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
+      return NextResponse.json({ message: 'No clinic assigned' }, { status: 403 })
+    }
+
     const body = await request.json()
-    const validation = invoiceInputSchema.safeParse(body)
+    console.log('Invoice POST body:', body)
+    
+    const validation = invoiceBaseSchema.safeParse(body)
 
     if (!validation.success) {
+      console.error('Invoice validation error:', validation.error.flatten())
       return NextResponse.json(
         { message: 'Validation error', errors: validation.error.flatten().fieldErrors },
         { status: 400 }
@@ -157,20 +171,20 @@ export async function POST(request: Request) {
     const { patientId, dueDate, notes, items } = validation.data
 
     const patient = await prisma.patient.findFirst({
-      where: { id: BigInt(patientId), clinicId: BigInt(session.user.clinicId), deletedAt: null },
+      where: { id: BigInt(patientId), clinicId, deletedAt: null },
     })
 
     if (!patient) {
       return NextResponse.json({ message: 'Patient not found' }, { status: 404 })
     }
 
-    const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
-    const totalDiscount = items.reduce((sum, item) => sum + item.discount, 0)
+    const subtotal = items.reduce((sum: number, item) => sum + (item.quantity * item.unitPrice), 0)
+    const totalDiscount = items.reduce((sum: number, item) => sum + item.discount, 0)
     const tax = 0 
     const total = subtotal - totalDiscount + tax
 
     const lastInvoice = await prisma.invoice.findFirst({
-      where: { clinicId: BigInt(session.user.clinicId) },
+      where: { clinicId },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -181,7 +195,7 @@ export async function POST(request: Request) {
 
     const invoice = await prisma.invoice.create({
       data: {
-        clinicId: BigInt(session.user.clinicId),
+        clinicId,
         patientId: BigInt(patientId),
         clinicInvoiceNumber: invoiceNumber,
         issuedById: session.user.id,

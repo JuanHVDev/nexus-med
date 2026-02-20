@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import { getUserClinicId, getUserRole } from '@/lib/clinic'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
@@ -13,8 +14,13 @@ export async function GET(
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
+      return NextResponse.json({ message: 'No clinic found' }, { status: 403 })
     }
 
     const { id } = await params
@@ -22,7 +28,7 @@ export async function GET(
     const labOrder = await prisma.labOrder.findFirst({
       where: {
         id: BigInt(id),
-        clinicId: BigInt(session.user.clinicId),
+        clinicId: BigInt(clinicId),
       },
       include: {
         patient: {
@@ -87,12 +93,18 @@ export async function PUT(
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
+      return NextResponse.json({ message: 'No clinic found' }, { status: 403 })
+    }
+
     const allowedRoles = ['ADMIN', 'DOCTOR']
-    if (!allowedRoles.includes(session.user.role)) {
+    const userRole = await getUserRole(session.user.id)
+    if (!userRole || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
 
@@ -110,7 +122,7 @@ export async function PUT(
     const existing = await prisma.labOrder.findFirst({
       where: {
         id: BigInt(id),
-        clinicId: BigInt(session.user.clinicId),
+        clinicId: BigInt(clinicId),
       },
     })
 
@@ -179,12 +191,18 @@ export async function DELETE(
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
+      return NextResponse.json({ message: 'No clinic found' }, { status: 403 })
+    }
+
     const allowedRoles = ['ADMIN', 'DOCTOR']
-    if (!allowedRoles.includes(session.user.role)) {
+    const userRole = await getUserRole(session.user.id)
+    if (!userRole || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
 
@@ -193,7 +211,7 @@ export async function DELETE(
     const existing = await prisma.labOrder.findFirst({
       where: {
         id: BigInt(id),
-        clinicId: BigInt(session.user.clinicId),
+        clinicId: BigInt(clinicId),
       },
     })
 

@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { medicalNoteUpdateTransform } from "@/lib/validations/medical-note"
 import { NextResponse } from "next/server"
@@ -13,10 +14,12 @@ export async function GET(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
   const note = await prisma.medicalNote.findFirst({
     where: {
       id: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     },
     include: {
       patient: true,
@@ -103,15 +106,19 @@ export async function PATCH(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const userRole = await getUserRole(session.user.id)
+  if (!userRole) return new NextResponse("No role assigned", { status: 403 })
   const allowedRoles = ["ADMIN", "DOCTOR"]
-  if (!allowedRoles.includes(session.user.role)) {
+  if (!allowedRoles.includes(userRole)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
   const existingNote = await prisma.medicalNote.findFirst({
     where: {
       id: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     }
   })
 

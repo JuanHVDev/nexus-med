@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
@@ -15,8 +16,13 @@ export async function GET(
     return new NextResponse("Unauthorized", { status: 401 })
   }
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return new NextResponse("No clinic assigned", { status: 403 })
+  }
+
   const patient = await prisma.patient.findFirst({
-    where: { id: BigInt(id), clinicId: session.user.clinicId, deletedAt: null }
+    where: { id: BigInt(id), clinicId, deletedAt: null }
   })
   
   if (!patient) {
@@ -26,7 +32,7 @@ export async function GET(
   const notes = await prisma.medicalNote.findMany({
     where: {
       patientId: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     },
     orderBy: {
       createdAt: 'desc'

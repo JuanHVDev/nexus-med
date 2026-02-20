@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
@@ -12,9 +13,15 @@ export async function PATCH(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
-  if (session.user.role !== "ADMIN")
+  const role = await getUserRole(session.user.id)
+  if (role !== "ADMIN")
   {
     return new NextResponse("Only admins can restore patients", { status: 403 })
+  }
+
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return new NextResponse("No clinic assigned", { status: 403 })
   }
 
   const { id } = await params
@@ -22,7 +29,7 @@ export async function PATCH(
   const existingPatient = await prisma.patient.findFirst({
     where: { 
       id: BigInt(id), 
-      clinicId: session.user.clinicId,
+      clinicId,
       deletedAt: { not: null }
     }
   })

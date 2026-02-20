@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { emergencyContactSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
@@ -20,8 +21,11 @@ export async function GET(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
+
   const { id } = await params
-  const patient = await verifyPatientOwnership(id, BigInt(session.user.clinicId!))
+  const patient = await verifyPatientOwnership(id, clinicId)
   if (!patient) return new NextResponse("Patient not found", { status: 404 })
 
   const contacts = await prisma.emergencyContact.findMany({
@@ -44,20 +48,22 @@ export async function POST(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
-  // Verificar permisos
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
+
+  const role = await getUserRole(session.user.id)
   const allowedRoles = ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST"]
-  if (!allowedRoles.includes(session.user.role)) {
+  if (!role || !allowedRoles.includes(role)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 
   const { id } = await params
-  const patient = await verifyPatientOwnership(id, BigInt(session.user.clinicId!))
+  const patient = await verifyPatientOwnership(id, clinicId)
   if (!patient) return new NextResponse("Patient not found", { status: 404 })
 
   const body = await request.json()
   const validated = emergencyContactSchema.parse(body)
 
-  // Si es primary, quitar primary de otros contactos
   if (validated.isPrimary) {
     await prisma.emergencyContact.updateMany({
       where: { patientId: BigInt(id), isPrimary: true },

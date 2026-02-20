@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
@@ -12,11 +13,13 @@ export async function GET(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
+
   const { id } = await params
 
-  // Verificar ownership
   const patient = await prisma.patient.findFirst({
-    where: { id: BigInt(id), clinicId: BigInt(session.user.clinicId!), deletedAt: null }
+    where: { id: BigInt(id), clinicId, deletedAt: null }
   })
   if (!patient) return new NextResponse("Not found", { status: 404 })
 
@@ -42,8 +45,8 @@ export async function PATCH(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
-  // Solo personal médico puede modificar historial
-  if (!["ADMIN", "DOCTOR", "NURSE"].includes(session.user.role))
+  const role = await getUserRole(session.user.id)
+  if (!role || !["ADMIN", "DOCTOR", "NURSE"].includes(role))
   {
     return new NextResponse("Forbidden", { status: 403 })
   }

@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import { getUserClinicId, getUserRole } from '@/lib/clinic'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
@@ -19,7 +20,12 @@ export async function GET(request: Request) {
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const clinicId = await getUserClinicId(session.user.id)
+    if (!clinicId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
@@ -29,7 +35,7 @@ export async function GET(request: Request) {
     const activeOnly = searchParams.get('active') !== 'false'
 
     const where: Record<string, unknown> = {
-      clinicId: BigInt(session.user.clinicId),
+      clinicId,
     }
 
     if (categoryId) {
@@ -61,7 +67,7 @@ export async function GET(request: Request) {
         ],
       }),
       prisma.serviceCategory.findMany({
-        where: { clinicId: BigInt(session.user.clinicId), isActive: true },
+        where: { clinicId, isActive: true },
         orderBy: { sortOrder: 'asc' },
       }),
     ])
@@ -96,12 +102,21 @@ export async function POST(request: Request) {
       headers: await headers(),
     })
     
-    if (!session?.user?.clinicId) {
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const [clinicId, role] = await Promise.all([
+      getUserClinicId(session.user.id),
+      getUserRole(session.user.id),
+    ])
+    
+    if (!clinicId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
     const allowedRoles = ['ADMIN']
-    if (!allowedRoles.includes(session.user.role)) {
+    if (!role || !allowedRoles.includes(role)) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
 
@@ -119,7 +134,7 @@ export async function POST(request: Request) {
 
     const service = await prisma.service.create({
       data: {
-        clinicId: BigInt(session.user.clinicId),
+        clinicId,
         name,
         description,
         categoryId: categoryId ? BigInt(categoryId) : null,

@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
@@ -14,18 +15,21 @@ export async function DELETE(
     return new NextResponse("Unauthorized", { status: 401 })
   }
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return new NextResponse("No clinic assigned", { status: 403 })
+  }
+
   const { id, contactId } = await params
 
-  // Verificar ownership del paciente
   const patient = await prisma.patient.findFirst({
-    where: { id: BigInt(id), clinicId: BigInt(session.user.clinicId!), deletedAt: null }
+    where: { id: BigInt(id), clinicId, deletedAt: null }
   })
   
   if (!patient) {
     return new NextResponse("Patient not found", { status: 404 })
   }
 
-  // Verificar que el contacto pertenece al paciente
   const contact = await prisma.emergencyContact.findFirst({
     where: { 
       id: BigInt(contactId),

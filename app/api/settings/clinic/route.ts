@@ -1,17 +1,26 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { serializeBigInt } from "@/lib/utils"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 import { z } from "zod"
 
 const clinicSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
-  rfc: z.string().min(12, "RFC inválido").max(13),
   address: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
 })
+
+async function getCurrentClinic(userId: string) {
+  const userClinic = await prisma.userClinic.findFirst({
+    where: { userId },
+    include: {
+      clinic: true,
+    },
+    orderBy: { joinedAt: 'asc' },
+  })
+  return userClinic
+}
 
 export async function GET() {
   const headersList = await headers()
@@ -21,19 +30,27 @@ export async function GET() {
     return new NextResponse("Unauthorized", { status: 401 })
   }
 
-  if (!session.user.clinicId) {
-    return new NextResponse("Clinic not found", { status: 404 })
+  const userClinic = await getCurrentClinic(session.user.id)
+
+  if (!userClinic) {
+    return NextResponse.json(
+      { error: "No tienes una clínica asignada" },
+      { status: 404 }
+    )
   }
 
-  const clinic = await prisma.clinic.findUnique({
-    where: { id: session.user.clinicId },
+  const clinic = userClinic.clinic
+
+  return NextResponse.json({
+    id: clinic.id.toString(),
+    name: clinic.name,
+    rfc: clinic.rfc,
+    address: clinic.address,
+    phone: clinic.phone,
+    email: clinic.email,
+    isActive: clinic.isActive,
+    role: userClinic.role,
   })
-
-  if (!clinic) {
-    return new NextResponse("Clinic not found", { status: 404 })
-  }
-
-  return NextResponse.json(serializeBigInt(clinic))
 }
 
 export async function PUT(request: Request) {
@@ -44,8 +61,21 @@ export async function PUT(request: Request) {
     return new NextResponse("Unauthorized", { status: 401 })
   }
 
-  if (!session.user.clinicId) {
-    return new NextResponse("Clinic not found", { status: 404 })
+  const userClinic = await getCurrentClinic(session.user.id)
+
+  if (!userClinic) {
+    return NextResponse.json(
+      { error: "No tienes una clínica asignada" },
+      { status: 404 }
+    )
+  }
+
+  // Verificar si es ADMIN
+  if (userClinic.role !== 'ADMIN') {
+    return NextResponse.json(
+      { error: "No tienes permisos para editar esta clínica" },
+      { status: 403 }
+    )
   }
 
   try {
@@ -53,11 +83,24 @@ export async function PUT(request: Request) {
     const validated = clinicSchema.parse(body)
 
     const clinic = await prisma.clinic.update({
-      where: { id: session.user.clinicId },
-      data: validated,
+      where: { id: userClinic.clinicId },
+      data: {
+        name: validated.name,
+        address: validated.address || null,
+        phone: validated.phone || null,
+        email: validated.email || null,
+      },
     })
 
-    return NextResponse.json(serializeBigInt(clinic))
+    return NextResponse.json({
+      id: clinic.id.toString(),
+      name: clinic.name,
+      rfc: clinic.rfc,
+      address: clinic.address,
+      phone: clinic.phone,
+      email: clinic.email,
+      isActive: clinic.isActive,
+    })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

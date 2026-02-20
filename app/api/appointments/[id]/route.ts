@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { appointmentUpdateTransform } from "@/lib/validations/appointment"
 import { NextResponse } from "next/server"
@@ -13,10 +14,13 @@ export async function GET(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("Clinic not found", { status: 403 })
+
   const appointment = await prisma.appointment.findFirst({
     where: {
       id: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     },
     include: {
       patient: true,
@@ -58,8 +62,12 @@ export async function PATCH(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("Clinic not found", { status: 403 })
+
+  const userRole = await getUserRole(session.user.id)
   const allowedRoles = ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST"]
-  if (!allowedRoles.includes(session.user.role)) {
+  if (!userRole || !allowedRoles.includes(userRole)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 
@@ -69,7 +77,7 @@ export async function PATCH(
   const existingAppointment = await prisma.appointment.findFirst({
     where: {
       id: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     }
   })
 
@@ -127,15 +135,19 @@ export async function DELETE(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("Clinic not found", { status: 403 })
+
+  const userRole = await getUserRole(session.user.id)
   const allowedRoles = ["ADMIN", "DOCTOR", "RECEPTIONIST"]
-  if (!allowedRoles.includes(session.user.role)) {
+  if (!userRole || !allowedRoles.includes(userRole)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 
   const existingAppointment = await prisma.appointment.findFirst({
     where: {
       id: BigInt(id),
-      clinicId: session.user.clinicId
+      clinicId
     }
   })
 

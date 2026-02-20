@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { prisma } from "@/lib/prisma"
 import { patientEditSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
@@ -27,8 +28,11 @@ export async function GET(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
+
   const { id } = await params
-  const patient = await getPatientOrError(id, BigInt(session.user.clinicId!))
+  const patient = await getPatientOrError(id, clinicId)
   if (patient instanceof NextResponse) return patient
 
   return NextResponse.json({
@@ -57,8 +61,11 @@ export async function PATCH(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
+
   const { id } = await params
-  const patient = await getPatientOrError(id, BigInt(session.user.clinicId!))
+  const patient = await getPatientOrError(id, clinicId)
   if (patient instanceof NextResponse) return patient
 
   const body = await request.json()
@@ -90,14 +97,17 @@ export async function DELETE(
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
-  // Solo admin puede eliminar
-  if (session.user.role !== "ADMIN")
+  const role = await getUserRole(session.user.id)
+  if (role !== "ADMIN")
   {
     return new NextResponse("Only admins can delete patients", { status: 403 })
   }
 
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
+
   const { id } = await params
-  const patient = await getPatientOrError(id, BigInt(session.user.clinicId!))
+  const patient = await getPatientOrError(id, clinicId)
   if (patient instanceof NextResponse) return patient
 
   await prisma.patient.update({ 

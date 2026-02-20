@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { appointmentSchema } from "@/lib/validations/appointment"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
@@ -8,6 +9,11 @@ export async function GET(request: Request) {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
+
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return new NextResponse("No clinic assigned", { status: 403 })
+  }
 
   const { searchParams } = new URL(request.url)
   const page = parseInt(searchParams.get("page") || "1")
@@ -19,7 +25,7 @@ export async function GET(request: Request) {
   const endDate = searchParams.get("endDate")
 
   const where: Record<string, unknown> = {
-    clinicId: session.user.clinicId,
+    clinicId,
   }
 
   if (doctorId) where.doctorId = doctorId
@@ -79,16 +85,30 @@ export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  const userRole = await getUserRole(session.user.id)
+  
+  if (!clinicId) {
+    return new NextResponse("No clinic assigned", { status: 403 })
+  }
+
   const allowedRoles = ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST"]
-  if (!allowedRoles.includes(session.user.role)) {
+  if (!userRole || !allowedRoles.includes(userRole)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 
   const body = await request.json()
-  const validated = appointmentSchema.parse(body)
+  
+  let validated
+  try {
+    validated = appointmentSchema.parse(body)
+  } catch (e) {
+    console.error("Validation error:", e)
+    return NextResponse.json({ error: "Datos inválidos", details: JSON.stringify(e, null, 2) }, { status: 400 })
+  }
 
   const patient = await prisma.patient.findFirst({
-    where: { id: validated.patientId, clinicId: session.user.clinicId, deletedAt: null }
+    where: { id: validated.patientId, clinicId, deletedAt: null }
   })
   if (!patient) {
     return new NextResponse("Patient not found", { status: 404 })
@@ -135,7 +155,7 @@ export async function POST(request: Request) {
   const appointment = await prisma.appointment.create({
     data: {
       ...validated,
-      clinicId: BigInt(session.user.clinicId!)
+      clinicId
     },
     include: {
       patient: {

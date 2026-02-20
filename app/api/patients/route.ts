@@ -1,14 +1,19 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import { patientSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 
-export async function GET(request: Request)
-{
+export async function GET(request: Request) {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
+
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return new NextResponse("No clinic assigned", { status: 403 })
+  }
 
   const { searchParams } = new URL(request.url)
   const page = parseInt(searchParams.get("page") || "1")
@@ -16,7 +21,7 @@ export async function GET(request: Request)
   const search = searchParams.get("search") || ""
 
   const where = {
-    clinicId: session.user.clinicId,
+    clinicId,
     deletedAt: null,
     OR: search ? [
       { firstName: { contains: search, mode: 'insensitive' as const } },
@@ -51,16 +56,22 @@ export async function GET(request: Request)
     pagination: { page, limit, total, pages: Math.ceil(total / limit) }
   })
 }
-export async function POST(request: Request)
-{
+
+export async function POST(request: Request) {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+  const clinicId = await getUserClinicId(session.user.id)
+  const userRole = await getUserRole(session.user.id)
+
+  if (!clinicId) {
+    return new NextResponse("No clinic assigned", { status: 403 })
+  }
+
   // Verificar rol tiene permisos
   const allowedRoles = ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST"]
-  if (!allowedRoles.includes(session.user.role))
-  {
+  if (!userRole || !allowedRoles.includes(userRole)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 
@@ -68,13 +79,11 @@ export async function POST(request: Request)
   const validated = patientSchema.parse(body)
 
   // Verificar CURP único en la clínica
-  if (validated.curp)
-  {
+  if (validated.curp) {
     const existing = await prisma.patient.findFirst({
-      where: { clinicId: BigInt(session.user.clinicId!), curp: validated.curp }
+      where: { clinicId, curp: validated.curp }
     })
-    if (existing)
-    {
+    if (existing) {
       return new NextResponse("CURP ya registrada", { status: 400 })
     }
   }
@@ -82,7 +91,7 @@ export async function POST(request: Request)
   const patient = await prisma.patient.create({
     data: {
       ...validated,
-      clinicId: BigInt(session.user.clinicId!)
+      clinicId
     }
   })
 
@@ -91,4 +100,4 @@ export async function POST(request: Request)
     id: patient.id.toString(),
     clinicId: patient.clinicId.toString()
   }, { status: 201 })
-} 
+}
