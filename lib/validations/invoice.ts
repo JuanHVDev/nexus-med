@@ -15,6 +15,12 @@ export const invoiceBaseSchema = z.object({
   items: z.array(invoiceItemSchema).min(1, "Al menos un item requerido"),
 })
 
+export const invoiceInputSchema = z.object({
+  dueDate: z.string().optional(),
+  notes: z.string().optional(),
+  items: z.array(invoiceItemSchema).min(1, "Al menos un item requerido"),
+})
+
 export const invoiceSchema = invoiceBaseSchema.transform((data) => {
   const itemsWithTotals = data.items.map(item => ({
     ...item,
@@ -29,8 +35,6 @@ export const invoiceSchema = invoiceBaseSchema.transform((data) => {
     items: itemsWithTotals,
   }
 })
-
-export const invoiceInputSchema = invoiceBaseSchema
 
 export const invoiceUpdateSchema = z.object({
   status: z.enum(["PENDING", "PAID", "PARTIAL", "CANCELLED"]).optional(),
