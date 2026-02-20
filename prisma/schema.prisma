@@ -68,6 +68,15 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  EXPORT
+  PDF_GENERATED
+}
+
 // ============ CORE MODELS ============
 
 model Clinic {
@@ -90,8 +99,8 @@ model Clinic {
   invoices          Invoice[]
   services          Service[]
   serviceCategories ServiceCategory[]
-  labOrders         LabOrder[]
-  imagingOrders    ImagingOrder[]
+  labOrders     LabOrder[]
+  imagingOrders ImagingOrder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -160,6 +169,7 @@ model User {
   invoices      Invoice[]
   labOrders     LabOrder[]
   imagingOrders ImagingOrder[]
+  auditLogs     AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -196,6 +206,9 @@ model Patient {
   isActive Boolean @default(true)
   deletedAt DateTime?
   notes    String?
+  
+  photoUrl  String?
+  photoName String?
 
   medicalHistory    MedicalHistory?
   emergencyContacts EmergencyContact[]
@@ -599,6 +612,30 @@ model ImagingOrder {
   @@index([orderDate])
   @@index([studyType])
   @@map("imaging_orders")
+}
+
+// ============ AUDIT LOG ============
+
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action     AuditAction
+  entityType String
+  entityId   String
+  entityName String?
+
+  ipAddress  String?
+  userAgent  String?
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_logs")
 }
 
 // ============ BETTER-AUTH MODELS ============

@@ -57,6 +57,8 @@ export const patientEditInputSchema = z.object({
   state: z.string().optional(),
   zipCode: z.string().optional(),
   notes: z.string().optional(),
+  photoUrl: z.string().optional(),
+  photoName: z.string().optional(),
 }).passthrough()
 
 export type PatientEditInputFormData = z.infer<typeof patientEditInputSchema>
