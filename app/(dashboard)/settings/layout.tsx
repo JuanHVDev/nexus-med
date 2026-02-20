@@ -7,6 +7,7 @@ import {
   Users, 
   UserCog, 
   Clock, 
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +16,7 @@ const settingsNavigation = [
   { name: 'Equipo', href: '/settings/team', icon: Users },
   { name: 'Médicos', href: '/settings/doctors', icon: UserCog },
   { name: 'Horarios', href: '/settings/hours', icon: Clock },
+  { name: 'Auditoría', href: '/settings/audit', icon: ShieldCheck },
 ]
 
 export default function SettingsLayout({

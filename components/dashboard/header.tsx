@@ -56,7 +56,7 @@ export function DashboardHeader({ user }: HeaderProps)
           {/* Profile dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full ring-offset-background transition-all hover:ring-2 hover:ring-primary/20" aria-label="Menú de usuario">
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full ring-offset-background transition-all hover:ring-2 hover:ring-primary/20" aria-label="Menú de usuario" suppressHydrationWarning>
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs border border-primary/20">
                     {user.name.charAt(0).toUpperCase()}
@@ -64,7 +64,7 @@ export function DashboardHeader({ user }: HeaderProps)
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mt-2 rounded-xl shadow-soft-elevated border-border/50 backdrop-blur-xl bg-background/95" align="end" forceMount>
+            <DropdownMenuContent className="w-56 mt-2 rounded-xl shadow-soft-elevated border-border/50 backdrop-blur-xl bg-background/95" align="end" forceMount suppressHydrationWarning>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1 py-1">
                   <p className="text-sm font-semibold leading-none">{user.name}</p>

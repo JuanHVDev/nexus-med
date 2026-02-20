@@ -14,6 +14,7 @@ import
   PaginationPrevious, PaginationNext, PaginationLink
 } from '@/components/ui/pagination'
 import { Plus, Search, Edit, Eye, FileText } from 'lucide-react'
+import { PatientAvatar } from './patient-avatar'
 
 type PatientListItem = {
   id: string
@@ -26,6 +27,7 @@ type PatientListItem = {
   email?: string
   bloodType?: string
   birthDate: string
+  photoUrl?: string | null
 }
 export function PatientList()
 {
@@ -76,8 +78,17 @@ export function PatientList()
           <TableBody>
             {data?.data?.map((patient: PatientListItem) => (
               <TableRow key={patient.id}>
-                <TableCell className="font-medium">
-                  {patient.lastName} {patient.firstName} {patient.middleName}
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <PatientAvatar
+                      photoUrl={patient.photoUrl}
+                      patientName={`${patient.firstName} ${patient.lastName}`}
+                      size="sm"
+                    />
+                    <span className="font-medium">
+                      {patient.lastName} {patient.firstName} {patient.middleName}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell>{patient.curp || '-'}</TableCell>
                 <TableCell>{patient.phone || patient.mobile || '-'}</TableCell>

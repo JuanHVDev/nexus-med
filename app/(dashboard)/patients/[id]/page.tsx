@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Edit, ArrowLeft, Phone, Mail, Calendar, AlertCircle, FileText, Clock, Eye, Check, FlaskConical, ImageIcon } from 'lucide-react'
+import { PatientPhotoWrapper } from '@/components/patients/patient-photo-wrapper'
 export default async function PatientDetailPage({
   params
 }: {
@@ -72,6 +73,12 @@ export default async function PatientDetailPage({
           <Link href="/patients">
             <Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
           </Link>
+          <PatientPhotoWrapper
+            patientId={patient.id.toString()}
+            photoUrl={patient.photoUrl}
+            photoName={patient.photoName}
+            patientName={`${patient.firstName} ${patient.lastName}`}
+          />
           <div>
             <h1 className="text-3xl font-bold">
               {patient.lastName} {patient.firstName} {patient.middleName}
