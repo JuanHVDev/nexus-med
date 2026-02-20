@@ -134,6 +134,8 @@ export async function PUT(
     }
     if (validation.data.reportUrl !== undefined) updateData.reportUrl = validation.data.reportUrl
     if (validation.data.imagesUrl !== undefined) updateData.imagesUrl = validation.data.imagesUrl
+    if (validation.data.reportFileName !== undefined) updateData.reportFileName = validation.data.reportFileName
+    if (validation.data.imagesFileName !== undefined) updateData.imagesFileName = validation.data.imagesFileName
     if (validation.data.findings !== undefined) updateData.findings = validation.data.findings
     if (validation.data.impression !== undefined) updateData.impression = validation.data.impression
 

@@ -64,6 +64,8 @@ export async function GET(
       patientId: labOrder.patientId.toString(),
       doctorId: labOrder.doctorId,
       medicalNoteId: labOrder.medicalNoteId?.toString() ?? null,
+      resultsFileUrl: labOrder.resultsFileUrl,
+      resultsFileName: labOrder.resultsFileName,
       patient: labOrder.patient ? {
         ...labOrder.patient,
         id: labOrder.patient.id.toString(),
@@ -133,6 +135,8 @@ export async function PUT(
     const updateData: Record<string, unknown> = {}
     if (validation.data.status !== undefined) updateData.status = validation.data.status
     if (validation.data.instructions !== undefined) updateData.instructions = validation.data.instructions
+    if (validation.data.resultsFileUrl !== undefined) updateData.resultsFileUrl = validation.data.resultsFileUrl
+    if (validation.data.resultsFileName !== undefined) updateData.resultsFileName = validation.data.resultsFileName
 
     const labOrder = await prisma.labOrder.update({
       where: { id: BigInt(id) },

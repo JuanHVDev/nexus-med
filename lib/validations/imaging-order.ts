@@ -12,8 +12,10 @@ export const imagingOrderCreateSchema = z.object({
 
 export const imagingOrderUpdateSchema = z.object({
   status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
-  reportUrl: z.string().optional(),
-  imagesUrl: z.string().optional(),
+  reportUrl: z.string().nullable().optional(),
+  imagesUrl: z.string().nullable().optional(),
+  reportFileName: z.string().nullable().optional(),
+  imagesFileName: z.string().nullable().optional(),
   findings: z.string().optional(),
   impression: z.string().optional(),
 })

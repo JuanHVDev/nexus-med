@@ -521,6 +521,10 @@ model LabOrder {
   status OrderStatus @default(PENDING)
 
   results LabResult[]
+  
+  // Archivo de resultados subido
+  resultsFileUrl  String?
+  resultsFileName String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -578,6 +582,8 @@ model ImagingOrder {
 
   reportUrl   String?   // PDF report
   imagesUrl   String?   // DICOM or images
+  reportFileName  String?   // Nombre original del PDF
+  imagesFileName  String?   // Nombre original de las imágenes
   findings    String?
   impression  String?
 

@@ -17,6 +17,8 @@ export const labOrderCreateSchema = z.object({
 export const labOrderUpdateSchema = z.object({
   status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
   instructions: z.string().optional(),
+  resultsFileUrl: z.string().nullable().optional(),
+  resultsFileName: z.string().nullable().optional(),
 })
 
 export const labResultSchema = z.object({
