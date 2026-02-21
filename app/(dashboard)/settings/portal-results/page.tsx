@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FlaskConical, Image, Eye, Check } from 'lucide-react'
+import { FlaskConical, ImageIcon, Eye, Check } from 'lucide-react'
 
 export default async function PortalResultsPage() {
   const headersList = await headers()
@@ -107,7 +107,7 @@ export default async function PortalResultsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Image alt="" className="h-5 w-5" />
+                <ImageIcon className="h-5 w-5" />
                 Imagenología ({pendingImagingResults.length})
               </CardTitle>
             </CardHeader>

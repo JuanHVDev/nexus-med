@@ -117,7 +117,7 @@ export default async function DashboardPage() {
         </div>
       </MotionContainer>
 
-      <StaggerChildren className="grid grid-cols-1 md:grid-cols-4 auto-rows-[160px] gap-4">
+      <StaggerChildren data-tour="dashboard-stats" className="grid grid-cols-1 md:grid-cols-4 auto-rows-[160px] gap-4">
         {/* Row 1 & 2: Main Priority - Appointments Today */}
         <MotionItem className="md:col-span-2 md:row-span-2">
           <Card className="h-full border-none bg-primary text-primary-foreground shadow-soft-elevated overflow-hidden group">

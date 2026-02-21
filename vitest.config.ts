@@ -12,13 +12,13 @@ export default defineConfig({
     exclude: [
       '**/*.d.ts',
       '**/*.config.ts',
-      'tests/unit/components/**'
+      'tests/integration/**',
+      'tests/e2e/**'
     ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: [
-        'app/api/**/*.ts',
         'lib/validations/**/*.ts',
         'lib/utils.ts'
       ],

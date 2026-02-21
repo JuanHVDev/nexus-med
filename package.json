@@ -13,13 +13,19 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest --config vitest.integration.config.ts",
+    "test:integration:run": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:install": "playwright install",
     "test:all": "pnpm test:run && pnpm test:e2e",
     "test:db:push": "dotenv -e .env.test -- prisma db push",
     "test:db:seed": "dotenv -e .env.test -- tsx prisma/seed-test.ts",
-    "test:db:reset": "pnpm test:db:push && pnpm test:db:seed"
+    "test:db:reset": "pnpm test:db:push && pnpm test:db:seed",
+    "test:load": "node tests/load/simple-load-test.mjs",
+    "test:load:light": "USERS=10 DURATION=30 node tests/load/simple-load-test.mjs",
+    "test:load:medium": "USERS=50 DURATION=60 node tests/load/simple-load-test.mjs",
+    "test:load:high": "USERS=100 DURATION=60 node tests/load/simple-load-test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -46,6 +52,7 @@
     "react-big-calendar": "^1.19.4",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
+    "react-joyride": "^2.9.3",
     "resend": "^6.9.2",
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.4.0",

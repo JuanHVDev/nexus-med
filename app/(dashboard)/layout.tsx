@@ -3,6 +3,8 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { DashboardSidebar } from '@/components/dashboard/sidebar'
 import { DashboardHeader } from '@/components/dashboard/header'
+import { OnboardingTour } from '@/components/onboarding/onboarding-tour'
+import { HelpButton } from '@/components/onboarding/help-button'
 
 export default async function DashboardLayout({
   children,
@@ -17,8 +19,12 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  const userRole = (session.user as unknown as { role?: string }).role || 'DOCTOR'
+
   return (
     <div className="min-h-screen bg-background grain">
+      <OnboardingTour userRole={userRole} />
+      <HelpButton />
       <DashboardSidebar user={session.user} />
       <div className="lg:pl-72 transition-all duration-300">
         <DashboardHeader user={session.user} />

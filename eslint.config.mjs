@@ -15,6 +15,10 @@ const eslintConfig = defineConfig([
     // Playwright report files (generated/minified)
     "playwright-report/**",
     "test-results/**",
+    // Coverage reports
+    "coverage/**",
+    // Load tests (k6 scenarios)
+    "tests/load/**",
   ]),
 ]);
 

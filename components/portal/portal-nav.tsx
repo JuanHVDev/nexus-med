@@ -11,12 +11,12 @@ import {
 } from 'lucide-react'
 
 const portalNavItems = [
-  { href: '/portal', label: 'Inicio', icon: User },
-  { href: '/portal/citas', label: 'Mis Citas', icon: Calendar },
-  { href: '/portal/recetas', label: 'Mis Recetas', icon: FileText },
-  { href: '/portal/resultados', label: 'Mis Resultados', icon: FlaskConical },
-  { href: '/portal/facturas', label: 'Mis Facturas', icon: Receipt },
-  { href: '/portal/historial', label: 'Mi Historial', icon: History },
+  { href: '/patient-portal', label: 'Inicio', icon: User },
+  { href: '/patient-portal/citas', label: 'Mis Citas', icon: Calendar },
+  { href: '/patient-portal/recetas', label: 'Mis Recetas', icon: FileText },
+  { href: '/patient-portal/resultados', label: 'Mis Resultados', icon: FlaskConical },
+  { href: '/patient-portal/facturas', label: 'Mis Facturas', icon: Receipt },
+  { href: '/patient-portal/historial', label: 'Mi Historial', icon: History },
 ]
 
 interface PortalNavProps {
@@ -51,14 +51,14 @@ export function PortalNav({ patientName }: PortalNavProps) {
 
       <div className="mt-6 pt-6 border-t">
         <Link
-          href="/portal/contacto"
+          href="/patient-portal/contacto"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
         >
           <Mail className="h-4 w-4" />
           Contactar
         </Link>
         <Link
-          href="/portal/perfil"
+          href="/patient-portal/perfil"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
         >
           <User className="h-4 w-4" />

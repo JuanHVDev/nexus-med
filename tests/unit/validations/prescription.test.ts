@@ -1,174 +1,342 @@
 import { describe, it, expect } from 'vitest'
-import { 
-  prescriptionSchema, 
-  prescriptionInputSchema,
-  prescriptionFilterSchema,
-  medicationSchema
+import {
+	medicationSchema,
+	prescriptionSchema,
+	prescriptionInputSchema,
+	prescriptionFilterSchema,
 } from '@/lib/validations/prescription'
 
-const validPrescription = {
-  patientId: '1',
-  medicalNoteId: '1',
-  medications: [
-    {
-      name: 'Paracetamol',
-      dosage: '500mg',
-      route: 'Oral',
-      frequency: 'Cada 6 horas',
-      duration: '5 días',
-      instructions: 'Tomar con alimentos',
-    },
-  ],
-  instructions: 'Seguir tratamiento indicado',
-  validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-}
+describe('prescription validation', () => {
+	describe('medicationSchema', () => {
+		it('should validate a correct medication', () => {
+			const validInput = {
+				name: 'Paracetamol',
+				dosage: '500mg',
+				route: 'Oral',
+				frequency: 'Cada 8 horas',
+				duration: '5 días',
+				instructions: 'Tomar con alimentos',
+			}
 
-describe('prescriptionSchema', () => {
-  it('should validate a valid prescription', () => {
-    const result = prescriptionSchema.safeParse(validPrescription)
-    expect(result.success).toBe(true)
-  })
+			const result = medicationSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
 
-  it('should reject empty patientId', () => {
-    const result = prescriptionSchema.safeParse({ ...validPrescription, patientId: '' })
-    expect(result.success).toBe(false)
-  })
+		it('should validate medication with required fields only', () => {
+			const validInput = {
+				name: 'Paracetamol',
+				dosage: '500mg',
+				route: 'Oral',
+			}
 
-  it('should reject empty medicalNoteId', () => {
-    const result = prescriptionSchema.safeParse({ ...validPrescription, medicalNoteId: '' })
-    expect(result.success).toBe(false)
-  })
+			const result = medicationSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
 
-  it('should reject empty medications array', () => {
-    const result = prescriptionSchema.safeParse({ ...validPrescription, medications: [] })
-    expect(result.success).toBe(false)
-  })
+		it('should reject missing name', () => {
+			const invalidInput = {
+				dosage: '500mg',
+				route: 'Oral',
+			}
 
-  it('should reject medication without name', () => {
-    const result = prescriptionSchema.safeParse({
-      ...validPrescription,
-      medications: [{ dosage: '500mg', route: 'Oral' }],
-    })
-    expect(result.success).toBe(false)
-  })
+			const result = medicationSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-  it('should reject medication without dosage', () => {
-    const result = prescriptionSchema.safeParse({
-      ...validPrescription,
-      medications: [{ name: 'Paracetamol', route: 'Oral' }],
-    })
-    expect(result.success).toBe(false)
-  })
+		it('should reject missing dosage', () => {
+			const invalidInput = {
+				name: 'Paracetamol',
+				route: 'Oral',
+			}
 
-  it('should reject medication without route', () => {
-    const result = prescriptionSchema.safeParse({
-      ...validPrescription,
-      medications: [{ name: 'Paracetamol', dosage: '500mg' }],
-    })
-    expect(result.success).toBe(false)
-  })
+			const result = medicationSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-  it('should transform IDs to BigInt', () => {
-    const result = prescriptionSchema.safeParse(validPrescription)
-    expect(result.success).toBe(true)
-  })
+		it('should reject missing route', () => {
+			const invalidInput = {
+				name: 'Paracetamol',
+				dosage: '500mg',
+			}
 
-  it('should accept validUntil as optional', () => {
-    const { validUntil, ...prescription } = validPrescription
-    void validUntil
-    const result = prescriptionSchema.safeParse(prescription)
-    expect(result.success).toBe(true)
-  })
-})
+			const result = medicationSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-describe('prescriptionInputSchema', () => {
-  it('should validate without transformation', () => {
-    const result = prescriptionInputSchema.safeParse(validPrescription)
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(typeof result.data.patientId).toBe('string')
-    }
-  })
-})
+		it('should reject empty name', () => {
+			const invalidInput = {
+				name: '',
+				dosage: '500mg',
+				route: 'Oral',
+			}
 
-describe('prescriptionFilterSchema', () => {
-  it('should validate empty filter', () => {
-    const result = prescriptionFilterSchema.safeParse({})
-    expect(result.success).toBe(true)
-  })
+			const result = medicationSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
+	})
 
-  it('should validate patientId filter', () => {
-    const result = prescriptionFilterSchema.safeParse({ patientId: '1' })
-    expect(result.success).toBe(true)
-  })
+	describe('prescriptionInputSchema', () => {
+		it('should validate a correct prescription input', () => {
+			const validInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+			}
 
-  it('should validate doctorId filter', () => {
-    const result = prescriptionFilterSchema.safeParse({ doctorId: 'user-123' })
-    expect(result.success).toBe(true)
-  })
+			const result = prescriptionInputSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
 
-  it('should validate date range filter', () => {
-    const result = prescriptionFilterSchema.safeParse({
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-    })
-    expect(result.success).toBe(true)
-  })
+		it('should validate with all optional fields', () => {
+			const validInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+						frequency: 'Cada 8 horas',
+						duration: '5 días',
+						instructions: 'Tomar con alimentos',
+					},
+				],
+				instructions: 'Mantener hidratación',
+				validUntil: '2024-12-31',
+			}
 
-  it('should validate search filter', () => {
-    const result = prescriptionFilterSchema.safeParse({ search: 'Paracetamol' })
-    expect(result.success).toBe(true)
-  })
-})
+			const result = prescriptionInputSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
 
-describe('medicationSchema', () => {
-  it('should validate a valid medication', () => {
-    const medication = {
-      name: 'Paracetamol',
-      dosage: '500mg',
-      route: 'Oral',
-      frequency: 'Cada 6 horas',
-      duration: '5 días',
-      instructions: 'Tomar con alimentos',
-    }
-    const result = medicationSchema.safeParse(medication)
-    expect(result.success).toBe(true)
-  })
+		it('should validate with multiple medications', () => {
+			const validInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+					{
+						name: 'Amoxicilina',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+			}
 
-  it('should reject medication without name', () => {
-    const medication = {
-      dosage: '500mg',
-      route: 'Oral',
-    }
-    const result = medicationSchema.safeParse(medication)
-    expect(result.success).toBe(false)
-  })
+			const result = prescriptionInputSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
 
-  it('should reject medication without dosage', () => {
-    const medication = {
-      name: 'Paracetamol',
-      route: 'Oral',
-    }
-    const result = medicationSchema.safeParse(medication)
-    expect(result.success).toBe(false)
-  })
+		it('should reject missing patientId', () => {
+			const invalidInput = {
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+			}
 
-  it('should reject medication without route', () => {
-    const medication = {
-      name: 'Paracetamol',
-      dosage: '500mg',
-    }
-    const result = medicationSchema.safeParse(medication)
-    expect(result.success).toBe(false)
-  })
+			const result = prescriptionInputSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-  it('should make optional fields optional', () => {
-    const medication = {
-      name: 'Paracetamol',
-      dosage: '500mg',
-      route: 'Oral',
-    }
-    const result = medicationSchema.safeParse(medication)
-    expect(result.success).toBe(true)
-  })
+		it('should reject missing medicalNoteId', () => {
+			const invalidInput = {
+				patientId: '123',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+			}
+
+			const result = prescriptionInputSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
+
+		it('should reject empty medications array', () => {
+			const invalidInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [],
+			}
+
+			const result = prescriptionInputSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
+
+		it('should reject medications with invalid item', () => {
+			const invalidInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: '',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+			}
+
+			const result = prescriptionInputSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
+	})
+
+	describe('prescriptionSchema (with transform)', () => {
+		it('should transform patientId to BigInt', () => {
+			const validInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+			}
+
+			const result = prescriptionSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.patientId).toBe(BigInt(123))
+			}
+		})
+
+		it('should transform medicalNoteId to BigInt', () => {
+			const validInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+			}
+
+			const result = prescriptionSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.medicalNoteId).toBe(BigInt(456))
+			}
+		})
+
+		it('should transform validUntil to Date when provided', () => {
+			const validInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+				validUntil: '2024-12-31',
+			}
+
+			const result = prescriptionSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.validUntil).toBeInstanceOf(Date)
+			}
+		})
+
+		it('should not transform validUntil when not provided', () => {
+			const validInput = {
+				patientId: '123',
+				medicalNoteId: '456',
+				medications: [
+					{
+						name: 'Paracetamol',
+						dosage: '500mg',
+						route: 'Oral',
+					},
+				],
+			}
+
+			const result = prescriptionSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.validUntil).toBeUndefined()
+			}
+		})
+	})
+
+	describe('prescriptionFilterSchema', () => {
+		it('should validate empty filter', () => {
+			const validInput = {}
+
+			const result = prescriptionFilterSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should validate filter with patientId', () => {
+			const validInput = {
+				patientId: '123',
+			}
+
+			const result = prescriptionFilterSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should validate filter with doctorId', () => {
+			const validInput = {
+				doctorId: '456',
+			}
+
+			const result = prescriptionFilterSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should validate filter with date range', () => {
+			const validInput = {
+				startDate: '2024-01-01',
+				endDate: '2024-12-31',
+			}
+
+			const result = prescriptionFilterSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should validate filter with search', () => {
+			const validInput = {
+				search: 'Paracetamol',
+			}
+
+			const result = prescriptionFilterSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should validate filter with all fields', () => {
+			const validInput = {
+				patientId: '123',
+				doctorId: '456',
+				startDate: '2024-01-01',
+				endDate: '2024-12-31',
+				search: 'Paracetamol',
+			}
+
+			const result = prescriptionFilterSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+	})
 })

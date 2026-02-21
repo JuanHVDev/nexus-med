@@ -1,144 +1,263 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest'
 import {
-  imagingOrderCreateSchema,
-  imagingOrderUpdateSchema,
-  STUDY_TYPES,
+	imagingOrderCreateSchema,
+	imagingOrderUpdateSchema,
+	STUDY_TYPES,
 } from '@/lib/validations/imaging-order'
 
-describe('imaging-order validation - imagingOrderCreateSchema', () => {
-  const validOrder = {
-    patientId: '1',
-    doctorId: 'doctor-1',
-    medicalNoteId: '1',
-    studyType: 'RX',
-    bodyPart: 'Tórax',
-    reason: 'Dolor torácico',
-    clinicalNotes: 'Paciente con dolor agudo',
-  }
+describe('imaging-order validation', () => {
+	describe('STUDY_TYPES', () => {
+		it('should contain expected study types', () => {
+			expect(STUDY_TYPES).toContainEqual({ value: 'RX', label: 'Radiografía Simple' })
+			expect(STUDY_TYPES).toContainEqual({ value: 'USG', label: 'Ultrasonido' })
+			expect(STUDY_TYPES).toContainEqual({ value: 'TAC', label: 'Tomografía (TAC)' })
+			expect(STUDY_TYPES).toContainEqual({ value: 'RM', label: 'Resonancia Magnética (RM)' })
+			expect(STUDY_TYPES).toContainEqual({ value: 'ECG', label: 'Electrocardiograma (ECG)' })
+			expect(STUDY_TYPES).toContainEqual({ value: 'EO', label: 'Espirometría' })
+			expect(STUDY_TYPES).toContainEqual({ value: 'MAM', label: 'Mastografía' })
+			expect(STUDY_TYPES).toContainEqual({ value: 'DENS', label: 'Densitometría Ósea' })
+			expect(STUDY_TYPES).toContainEqual({ value: 'OTRO', label: 'Otro' })
+		})
 
-  it('should validate valid imaging order', () => {
-    const result = imagingOrderCreateSchema.safeParse(validOrder)
-    expect(result.success).toBe(true)
-  })
+		it('should have correct number of study types', () => {
+			expect(STUDY_TYPES.length).toBe(9)
+		})
 
-  it('should reject empty patientId', () => {
-    const result = imagingOrderCreateSchema.safeParse({ ...validOrder, patientId: '' })
-    expect(result.success).toBe(false)
-  })
+		it('should have value and label for each type', () => {
+			STUDY_TYPES.forEach((type) => {
+				expect(type).toHaveProperty('value')
+				expect(type).toHaveProperty('label')
+				expect(typeof type.value).toBe('string')
+				expect(typeof type.label).toBe('string')
+			})
+		})
+	})
 
-  it('should reject empty doctorId', () => {
-    const result = imagingOrderCreateSchema.safeParse({ ...validOrder, doctorId: '' })
-    expect(result.success).toBe(false)
-  })
+	describe('imagingOrderCreateSchema', () => {
+		it('should validate a correct imaging order', () => {
+			const validInput = {
+				patientId: '123',
+				doctorId: '456',
+				studyType: 'RX',
+				bodyPart: 'Tórax',
+			}
 
-  it('should reject empty studyType', () => {
-    const result = imagingOrderCreateSchema.safeParse({ ...validOrder, studyType: '' })
-    expect(result.success).toBe(false)
-  })
+			const result = imagingOrderCreateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
 
-  it('should reject empty bodyPart', () => {
-    const result = imagingOrderCreateSchema.safeParse({ ...validOrder, bodyPart: '' })
-    expect(result.success).toBe(false)
-  })
+		it('should validate with all optional fields', () => {
+			const validInput = {
+				patientId: '123',
+				doctorId: '456',
+				medicalNoteId: '789',
+				studyType: 'TAC',
+				bodyPart: 'Abdomen',
+				reason: 'Dolor abdominal',
+				clinicalNotes: 'Paciente con dolor en FID',
+			}
 
-  it('should accept optional medicalNoteId', () => {
-    const { medicalNoteId: _, ...withoutNote } = validOrder
-    void _
-    const result = imagingOrderCreateSchema.safeParse(withoutNote)
-    expect(result.success).toBe(true)
-  })
+			const result = imagingOrderCreateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
 
-  it('should accept null reason', () => {
-    const result = imagingOrderCreateSchema.safeParse({ ...validOrder, reason: null })
-    expect(result.success).toBe(true)
-  })
+		it('should accept null for reason and clinicalNotes', () => {
+			const validInput = {
+				patientId: '123',
+				doctorId: '456',
+				studyType: 'RX',
+				bodyPart: 'Tórax',
+				reason: null,
+				clinicalNotes: null,
+			}
 
-  it('should accept null clinicalNotes', () => {
-    const result = imagingOrderCreateSchema.safeParse({ ...validOrder, clinicalNotes: null })
-    expect(result.success).toBe(true)
-  })
+			const result = imagingOrderCreateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
 
-  it('should accept all valid study types', () => {
-    for (const type of STUDY_TYPES) {
-      const result = imagingOrderCreateSchema.safeParse({ ...validOrder, studyType: type.value })
-      expect(result.success).toBe(true)
-    }
-  })
-})
+		it('should reject missing patientId', () => {
+			const invalidInput = {
+				doctorId: '456',
+				studyType: 'RX',
+				bodyPart: 'Tórax',
+			}
 
-describe('imaging-order validation - imagingOrderUpdateSchema', () => {
-  it('should validate valid status update', () => {
-    const result = imagingOrderUpdateSchema.safeParse({ status: 'COMPLETED' })
-    expect(result.success).toBe(true)
-  })
+			const result = imagingOrderCreateSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-  it('should validate valid reportUrl update', () => {
-    const result = imagingOrderUpdateSchema.safeParse({
-      reportUrl: 'https://storage.example.com/report.pdf',
-    })
-    expect(result.success).toBe(true)
-  })
+		it('should reject missing doctorId', () => {
+			const invalidInput = {
+				patientId: '123',
+				studyType: 'RX',
+				bodyPart: 'Tórax',
+			}
 
-  it('should validate findings update', () => {
-    const result = imagingOrderUpdateSchema.safeParse({
-      findings: 'Se observa consolidación en lóbulo inferior derecho',
-    })
-    expect(result.success).toBe(true)
-  })
+			const result = imagingOrderCreateSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-  it('should validate impression update', () => {
-    const result = imagingOrderUpdateSchema.safeParse({
-      impression: 'Neumonía adquirida en la comunidad',
-    })
-    expect(result.success).toBe(true)
-  })
+		it('should reject missing studyType', () => {
+			const invalidInput = {
+				patientId: '123',
+				doctorId: '456',
+				bodyPart: 'Tórax',
+			}
 
-  it('should accept empty update', () => {
-    const result = imagingOrderUpdateSchema.safeParse({})
-    expect(result.success).toBe(true)
-  })
+			const result = imagingOrderCreateSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-  it('should reject invalid status', () => {
-    const result = imagingOrderUpdateSchema.safeParse({ status: 'INVALID' })
-    expect(result.success).toBe(false)
-  })
+		it('should reject missing bodyPart', () => {
+			const invalidInput = {
+				patientId: '123',
+				doctorId: '456',
+				studyType: 'RX',
+			}
 
-  it('should accept all valid statuses', () => {
-    const statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
-    for (const status of statuses) {
-      const result = imagingOrderUpdateSchema.safeParse({ status: status as any })
-      expect(result.success).toBe(true)
-    }
-  })
+			const result = imagingOrderCreateSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-  it('should allow multiple field updates', () => {
-    const result = imagingOrderUpdateSchema.safeParse({
-      status: 'COMPLETED',
-      findings: 'Hallazgos normales',
-      impression: 'Sin alteraciones significativas',
-    })
-    expect(result.success).toBe(true)
-  })
-})
+		it('should accept all study types', () => {
+			STUDY_TYPES.forEach((type) => {
+				const validInput = {
+					patientId: '123',
+					doctorId: '456',
+					studyType: type.value,
+					bodyPart: 'Test',
+				}
+				const result = imagingOrderCreateSchema.safeParse(validInput)
+				expect(result.success).toBe(true)
+			})
+		})
 
-describe('STUDY_TYPES constant', () => {
-  it('should have at least 5 study types', () => {
-    expect(STUDY_TYPES.length).toBeGreaterThanOrEqual(5)
-  })
+		it('should reject empty patientId', () => {
+			const invalidInput = {
+				patientId: '',
+				doctorId: '456',
+				studyType: 'RX',
+				bodyPart: 'Tórax',
+			}
 
-  it('should have valid structure for each type', () => {
-    for (const type of STUDY_TYPES) {
-      expect(type).toHaveProperty('value')
-      expect(type).toHaveProperty('label')
-      expect(typeof type.value).toBe('string')
-      expect(typeof type.label).toBe('string')
-    }
-  })
+			const result = imagingOrderCreateSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
 
-  it('should include common study types', () => {
-    const values = STUDY_TYPES.map((t) => t.value)
-    expect(values).toContain('RX')
-    expect(values).toContain('USG')
-  })
+		it('should reject empty studyType', () => {
+			const invalidInput = {
+				patientId: '123',
+				doctorId: '456',
+				studyType: '',
+				bodyPart: 'Tórax',
+			}
+
+			const result = imagingOrderCreateSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
+
+		it('should reject empty bodyPart', () => {
+			const invalidInput = {
+				patientId: '123',
+				doctorId: '456',
+				studyType: 'RX',
+				bodyPart: '',
+			}
+
+			const result = imagingOrderCreateSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
+	})
+
+	describe('imagingOrderUpdateSchema', () => {
+		it('should validate partial update with status', () => {
+			const validInput = {
+				status: 'COMPLETED' as const,
+			}
+
+			const result = imagingOrderUpdateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should validate with all fields', () => {
+			const validInput = {
+				status: 'COMPLETED' as const,
+				reportUrl: 'https://example.com/report.pdf',
+				imagesUrl: 'https://example.com/images.zip',
+				reportFileName: 'report.pdf',
+				imagesFileName: 'images.zip',
+				findings: 'Hallazgos normales',
+				impression: 'Estudio dentro de límites normales',
+			}
+
+			const result = imagingOrderUpdateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should accept null for file fields', () => {
+			const validInput = {
+				reportUrl: null,
+				imagesUrl: null,
+				reportFileName: null,
+				imagesFileName: null,
+			}
+
+			const result = imagingOrderUpdateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should validate with all optional fields', () => {
+			const validInput = {}
+
+			const result = imagingOrderUpdateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should reject invalid status', () => {
+			const invalidInput = {
+				status: 'INVALID' as never,
+			}
+
+			const result = imagingOrderUpdateSchema.safeParse(invalidInput)
+			expect(result.success).toBe(false)
+		})
+
+		it('should accept all valid statuses', () => {
+			const statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const
+
+			statuses.forEach((status) => {
+				const validInput = { status }
+				const result = imagingOrderUpdateSchema.safeParse(validInput)
+				expect(result.success).toBe(true)
+			})
+		})
+
+		it('should allow updating findings only', () => {
+			const validInput = {
+				findings: 'Opacidad en lóbulo superior derecho',
+			}
+
+			const result = imagingOrderUpdateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should allow updating impression only', () => {
+			const validInput = {
+				impression: 'Sugiere neumonía',
+			}
+
+			const result = imagingOrderUpdateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+
+		it('should allow uploading report only', () => {
+			const validInput = {
+				reportUrl: 'https://example.com/report.pdf',
+				reportFileName: 'report.pdf',
+			}
+
+			const result = imagingOrderUpdateSchema.safeParse(validInput)
+			expect(result.success).toBe(true)
+		})
+	})
 })

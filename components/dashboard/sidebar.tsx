@@ -42,7 +42,7 @@ export function DashboardSidebar({ user }: SidebarProps) {
   const pathname = usePathname()
 
   return (
-    <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col lg:p-4">
+    <div data-tour="sidebar" className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col lg:p-4">
       <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sidebar backdrop-blur-xl px-6 pb-4 border border-sidebar-border rounded-2xl shadow-soft-elevated">
         <div className="flex h-16 shrink-0 items-center">
           <h1 className="text-xl font-serif font-bold text-primary tracking-tight">HC Gestor</h1>
@@ -52,10 +52,20 @@ export function DashboardSidebar({ user }: SidebarProps) {
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
             <li>
               <ul role="list" className="-mx-2 space-y-1">
-                {navigation.map((item) => (
+                {navigation.map((item, index) => (
                   <li key={item.name}>
                     <Link
                       href={item.href}
+                      data-tour={
+                        item.href === '/dashboard' ? 'dashboard-stats' :
+                        item.href === '/patients' ? 'patients' :
+                        item.href === '/appointments' ? 'appointments' :
+                        item.href === '/consultations' ? 'medical-notes' :
+                        item.href === '/billing' ? 'billing' :
+                        item.href === '/settings' ? 'settings' :
+                        item.href === '/reports' ? 'reports' :
+                        undefined
+                      }
                       className={cn(
                         pathname === item.href
                           ? 'bg-sidebar-accent text-sidebar-primary'
