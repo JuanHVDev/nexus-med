@@ -44,7 +44,7 @@ export interface PrescriptionListItem {
   medicalNote: PrescriptionMedicalNote
 }
 
-export interface PrescriptionDetail extends PrescriptionListItem {}
+export type PrescriptionDetail = PrescriptionListItem
 
 export interface CreatePrescriptionInput {
   patientId: bigint

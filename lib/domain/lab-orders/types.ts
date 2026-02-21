@@ -55,7 +55,7 @@ export interface LabOrderListItem {
   results: LabResultItem[]
 }
 
-export interface LabOrderDetail extends LabOrderListItem {}
+export type LabOrderDetail = LabOrderListItem
 
 export interface CreateLabOrderInput {
   patientId: bigint

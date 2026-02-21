@@ -3,12 +3,13 @@ import { getUserClinicId, getUserRole } from "@/lib/clinic"
 import {
   patientService,
   PatientNotFoundError,
-  ALLOWED_ROLES_FOR_UPDATE,
   ALLOWED_ROLES_FOR_DELETE,
 } from "@/lib/domain/patients"
 import { patientEditSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
+
+type AllowedRole = (typeof ALLOWED_ROLES_FOR_DELETE)[number]
 
 export async function GET(
   request: Request,
@@ -83,7 +84,7 @@ export async function DELETE(
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
   const role = await getUserRole(session.user.id)
-  if (!role || !ALLOWED_ROLES_FOR_DELETE.includes(role as any)) {
+  if (!role || !ALLOWED_ROLES_FOR_DELETE.includes(role as AllowedRole)) {
     return new NextResponse("Only admins can delete patients", { status: 403 })
   }
 

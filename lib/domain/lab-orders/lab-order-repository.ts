@@ -8,9 +8,43 @@ import type {
   LabResultItem,
   CreateLabResultInput,
   LabTest,
+  ResultFlag,
+  OrderStatus,
 } from "./types"
 
-function mapLabResult(result: any): LabResultItem {
+interface PrismaLabResult {
+  id: bigint
+  labOrderId: bigint
+  testName: string
+  result: string | null
+  unit: string | null
+  referenceRange: string | null
+  flag: string | null
+  resultDate: Date | null
+  createdAt: Date
+  updatedAt?: Date
+}
+
+interface PrismaLabOrder {
+  id: bigint
+  clinicId: bigint
+  patientId: bigint
+  doctorId: string
+  medicalNoteId: bigint | null
+  orderDate: Date
+  tests: LabTest[] | unknown
+  instructions: string | null
+  status: string
+  resultsFileUrl: string | null
+  resultsFileName: string | null
+  createdAt: Date
+  updatedAt: Date
+  patient: { id: bigint; firstName: string; lastName: string; middleName: string | null; curp?: string | null; birthDate?: Date }
+  doctor: { id: string; name: string; specialty?: string | null; licenseNumber?: string | null }
+  results?: PrismaLabResult[]
+}
+
+function mapLabResult(result: PrismaLabResult): LabResultItem {
   return {
     id: result.id.toString(),
     labOrderId: result.labOrderId.toString(),
@@ -18,14 +52,14 @@ function mapLabResult(result: any): LabResultItem {
     result: result.result,
     unit: result.unit,
     referenceRange: result.referenceRange,
-    flag: result.flag,
+    flag: result.flag as ResultFlag | null,
     resultDate: result.resultDate,
     createdAt: result.createdAt,
-    updatedAt: result.updatedAt,
+    updatedAt: result.updatedAt ?? result.createdAt,
   }
 }
 
-function mapLabOrderToListItem(order: any): LabOrderListItem {
+function mapLabOrderToListItem(order: PrismaLabOrder): LabOrderListItem {
   return {
     id: order.id.toString(),
     clinicId: order.clinicId.toString(),
@@ -35,7 +69,7 @@ function mapLabOrderToListItem(order: any): LabOrderListItem {
     orderDate: order.orderDate,
     tests: order.tests as LabTest[],
     instructions: order.instructions,
-    status: order.status,
+    status: order.status as OrderStatus,
     resultsFileUrl: order.resultsFileUrl,
     resultsFileName: order.resultsFileName,
     createdAt: order.createdAt,
@@ -141,7 +175,7 @@ export const labOrderRepository = {
         patientId: input.patientId,
         doctorId: input.doctorId,
         medicalNoteId: input.medicalNoteId,
-        tests: input.tests as any,
+        tests: input.tests as never,
         instructions: input.instructions,
       },
       include: {
@@ -221,10 +255,10 @@ export const labOrderRepository = {
     return createdResults.map(mapLabResult)
   },
 
-  async updateStatus(id: bigint, status: string): Promise<void> {
+  async updateStatus(id: bigint, newStatus: string): Promise<void> {
     await prisma.labOrder.update({
       where: { id },
-      data: { status: status as any },
+      data: { status: newStatus as OrderStatus },
     })
   },
 

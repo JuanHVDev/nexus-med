@@ -10,37 +10,72 @@ import type {
   EmergencyContact,
   UpdateMedicalHistoryInput,
   CreateEmergencyContactInput,
+  Gender,
+  BloodType,
+  PatientNoteSimple,
 } from "./types"
 
-function mapMedicalHistory(history: any): MedicalHistory {
+interface PrismaMedicalHistory {
+  id: bigint
+  patientId: bigint
+  allergies: unknown
+  currentMedications: unknown
+  chronicDiseases: unknown
+  surgeries: unknown
+  familyHistory: string | null
+  personalHistory: string | null
+  smoking: unknown
+  alcohol: unknown
+  drugs: unknown
+  exercise: unknown
+  diet: unknown
+  vitalSigns: unknown
+  vitalSignsRecordedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface PrismaEmergencyContact {
+  id: bigint
+  patientId: bigint
+  name: string
+  relation: string | null
+  phone: string | null
+  email: string | null
+  isPrimary: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+function mapMedicalHistory(history: PrismaMedicalHistory): MedicalHistory {
   return {
     id: history.id.toString(),
     patientId: history.patientId.toString(),
-    allergies: history.allergies,
-    currentMedications: history.currentMedications,
-    chronicDiseases: history.chronicDiseases,
-    surgeries: history.surgeries,
+    allergies: Array.isArray(history.allergies) ? history.allergies as string[] : [],
+    currentMedications: Array.isArray(history.currentMedications) ? history.currentMedications as string[] : [],
+    chronicDiseases: Array.isArray(history.chronicDiseases) ? history.chronicDiseases as string[] : [],
+    surgeries: Array.isArray(history.surgeries) ? history.surgeries as string[] : [],
     familyHistory: history.familyHistory,
     personalHistory: history.personalHistory,
-    smoking: history.smoking,
-    alcohol: history.alcohol,
-    drugs: history.drugs,
-    exercise: history.exercise,
-    diet: history.diet,
-    vitalSigns: history.vitalSigns,
+    smoking: Boolean(history.smoking),
+    alcohol: Boolean(history.alcohol),
+    drugs: Boolean(history.drugs),
+    exercise: history.exercise as string | null,
+    diet: history.diet as string | null,
+    vitalSigns: history.vitalSigns as Record<string, unknown> | null,
     vitalSignsRecordedAt: history.vitalSignsRecordedAt,
     createdAt: history.createdAt,
     updatedAt: history.updatedAt,
   }
 }
 
-function mapEmergencyContact(contact: any): EmergencyContact {
+function mapEmergencyContact(contact: PrismaEmergencyContact): EmergencyContact {
   return {
     id: contact.id.toString(),
     patientId: contact.patientId.toString(),
     name: contact.name,
-    relation: contact.relation,
-    phone: contact.phone,
+    relation: contact.relation ?? "",
+    phone: contact.phone ?? "",
     email: contact.email,
     isPrimary: contact.isPrimary,
     createdAt: contact.createdAt,
@@ -48,7 +83,37 @@ function mapEmergencyContact(contact: any): EmergencyContact {
   }
 }
 
-function mapPatientToListItem(patient: any): PatientListItem {
+interface PrismaPatient {
+  id: bigint
+  clinicId: bigint
+  firstName: string
+  lastName: string
+  middleName: string | null
+  curp: string | null
+  birthDate: Date | null
+  gender: string | null
+  bloodType: string | null
+  email: string | null
+  phone: string | null
+  mobile: string | null
+  address: string | null
+  city: string | null
+  state: string | null
+  zipCode: string | null
+  isActive: boolean
+  deletedAt: Date | null
+  notes: string | null
+  photoUrl: string | null
+  photoName: string | null
+  userId: string | null
+  createdAt: Date
+  updatedAt: Date
+  medicalHistory: PrismaMedicalHistory | null
+  emergencyContacts?: PrismaEmergencyContact[]
+  _count?: { appointments: number; medicalNotes: number }
+}
+
+function mapPatientToListItem(patient: PrismaPatient): PatientListItem {
   return {
     id: patient.id.toString(),
     clinicId: patient.clinicId.toString(),
@@ -56,9 +121,9 @@ function mapPatientToListItem(patient: any): PatientListItem {
     lastName: patient.lastName,
     middleName: patient.middleName,
     curp: patient.curp,
-    birthDate: patient.birthDate,
-    gender: patient.gender,
-    bloodType: patient.bloodType,
+    birthDate: patient.birthDate ?? new Date(),
+    gender: patient.gender as Gender,
+    bloodType: patient.bloodType as BloodType | null,
     email: patient.email,
     phone: patient.phone,
     mobile: patient.mobile,
@@ -78,7 +143,7 @@ function mapPatientToListItem(patient: any): PatientListItem {
   }
 }
 
-function mapPatientToDetail(patient: any): PatientDetail {
+function mapPatientToDetail(patient: PrismaPatient): PatientDetail {
   return {
     ...mapPatientToListItem(patient),
     emergencyContacts: patient.emergencyContacts?.map(mapEmergencyContact) || [],
@@ -220,8 +285,8 @@ export const patientRepository = {
   ): Promise<MedicalHistory> {
     const history = await prisma.medicalHistory.upsert({
       where: { patientId },
-      update: data as any,
-      create: { patientId, ...data } as any,
+      update: data as never,
+      create: { patientId, ...data } as never,
     })
 
     return mapMedicalHistory(history)
@@ -272,7 +337,7 @@ export const patientRepository = {
     return mapEmergencyContact(contact)
   },
 
-  async getPatientNotes(patientId: bigint, clinicId: bigint): Promise<any[]> {
+  async getPatientNotes(patientId: bigint, clinicId: bigint): Promise<PatientNoteSimple[]> {
     const notes = await prisma.medicalNote.findMany({
       where: { patientId, clinicId },
       orderBy: { createdAt: "desc" },

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import type { Specialty, noteTypeEnum } from "@/lib/validations/medical-note"
 import type {
   MedicalNoteRepository,
   MedicalNoteListItem,
@@ -7,6 +8,8 @@ import type {
   MedicalNoteListResult,
   CreateMedicalNoteInput,
   UpdateMedicalNoteInput,
+  VitalSigns,
+  NoteType,
 } from "./types"
 
 type AppointmentStatus = "SCHEDULED" | "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW"
@@ -23,17 +26,45 @@ function mapVitalSigns(vitalSigns: unknown): Record<string, unknown> | null {
   return vitalSigns as Record<string, unknown>
 }
 
-function mapNoteToListItem(note: any): MedicalNoteListItem {
+interface PrismaMedicalNoteList {
+  id: bigint
+  clinicId: bigint
+  patientId: bigint
+  doctorId: string
+  appointmentId: bigint | null
+  specialty: string | null
+  type: string | null
+  chiefComplaint: string | null
+  diagnosis: string | null
+  createdAt: Date
+  updatedAt: Date
+  patient: { id: bigint; firstName: string; lastName: string; middleName: string | null }
+  doctor: { id: string; name: string; specialty: string | null }
+}
+
+interface PrismaMedicalNoteDetail extends PrismaMedicalNoteList {
+  currentIllness: string | null
+  vitalSigns: unknown
+  physicalExam: string | null
+  prognosis: string | null
+  treatment: string | null
+  notes: string | null
+  doctor: { id: string; name: string; email: string; specialty: string | null; licenseNumber: string | null }
+  appointment: { id: bigint; clinicId: bigint; patientId: bigint; doctorId: string; startTime: Date; endTime: Date; status: string; reason: string | null; notes: string | null } | null
+  prescriptions: Array<{ id: bigint; patientId: bigint; doctorId: string; medicalNoteId: bigint; medications: unknown; instructions: string | null; issueDate: Date; validUntil: Date | null; createdAt: Date }>
+}
+
+function mapNoteToListItem(note: PrismaMedicalNoteList): MedicalNoteListItem {
   return {
     id: note.id.toString(),
     clinicId: note.clinicId.toString(),
     patientId: note.patientId.toString(),
     doctorId: note.doctorId,
     appointmentId: note.appointmentId?.toString() ?? null,
-    specialty: note.specialty,
-    type: note.type,
-    chiefComplaint: note.chiefComplaint,
-    diagnosis: note.diagnosis,
+    specialty: note.specialty as Specialty,
+    type: note.type as NoteType,
+    chiefComplaint: note.chiefComplaint ?? "",
+    diagnosis: note.diagnosis ?? "",
     createdAt: note.createdAt,
     updatedAt: note.updatedAt,
     patient: {
@@ -45,25 +76,25 @@ function mapNoteToListItem(note: any): MedicalNoteListItem {
     doctor: {
       id: note.doctor.id,
       name: note.doctor.name,
-      specialty: note.doctor.specialty,
+      specialty: note.doctor.specialty ?? "",
     },
   }
 }
 
-function mapNoteToDetail(note: any): MedicalNoteDetail {
+function mapNoteToDetail(note: PrismaMedicalNoteDetail): MedicalNoteDetail {
   return {
     id: note.id.toString(),
     clinicId: note.clinicId.toString(),
     patientId: note.patientId.toString(),
     doctorId: note.doctorId,
     appointmentId: note.appointmentId?.toString() ?? null,
-    specialty: note.specialty,
-    type: note.type,
-    chiefComplaint: note.chiefComplaint,
+    specialty: note.specialty as Specialty,
+    type: note.type as NoteType,
+    chiefComplaint: note.chiefComplaint ?? "",
     currentIllness: note.currentIllness,
-    vitalSigns: mapVitalSigns(note.vitalSigns) as any,
+    vitalSigns: mapVitalSigns(note.vitalSigns) as VitalSigns | null,
     physicalExam: note.physicalExam,
-    diagnosis: note.diagnosis,
+    diagnosis: note.diagnosis ?? "",
     prognosis: note.prognosis,
     treatment: note.treatment,
     notes: note.notes,
@@ -79,7 +110,7 @@ function mapNoteToDetail(note: any): MedicalNoteDetail {
       id: note.doctor.id,
       name: note.doctor.name,
       email: note.doctor.email,
-      specialty: note.doctor.specialty,
+      specialty: note.doctor.specialty ?? "",
       licenseNumber: note.doctor.licenseNumber,
     },
     appointment: note.appointment
@@ -95,7 +126,7 @@ function mapNoteToDetail(note: any): MedicalNoteDetail {
           notes: note.appointment.notes,
         }
       : null,
-    prescriptions: note.prescriptions.map((p: any) => ({
+    prescriptions: note.prescriptions.map((p) => ({
       id: p.id.toString(),
       patientId: p.patientId.toString(),
       doctorId: p.doctorId,

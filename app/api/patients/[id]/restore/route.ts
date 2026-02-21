@@ -8,6 +8,8 @@ import {
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 
+type AllowedRole = (typeof ALLOWED_ROLES_FOR_RESTORE)[number]
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -17,7 +19,7 @@ export async function PATCH(
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
   const role = await getUserRole(session.user.id)
-  if (!role || !ALLOWED_ROLES_FOR_RESTORE.includes(role as any)) {
+  if (!role || !ALLOWED_ROLES_FOR_RESTORE.includes(role as AllowedRole)) {
     return new NextResponse("Only admins can restore patients", { status: 403 })
   }
 

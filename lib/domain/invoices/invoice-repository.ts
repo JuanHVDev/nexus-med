@@ -12,6 +12,8 @@ import type {
   PaymentMethod
 } from "./types"
 
+type PrismaMoney = unknown
+
 type PrismaInvoice = {
   id: bigint
   clinicId: bigint
@@ -20,10 +22,10 @@ type PrismaInvoice = {
   issuedById: string
   issueDate: Date
   dueDate: Date | null
-  subtotal: any
-  tax: any
-  discount: any
-  total: any
+  subtotal: PrismaMoney
+  tax: PrismaMoney
+  discount: PrismaMoney
+  total: PrismaMoney
   status: string
   notes: string | null
   patient: {
@@ -44,14 +46,14 @@ type PrismaInvoice = {
     serviceId: bigint | null
     description: string
     quantity: number
-    unitPrice: any
-    discount: any
-    total: any
+    unitPrice: PrismaMoney
+    discount: PrismaMoney
+    total: PrismaMoney
   }>
   payments: Array<{
     id: bigint
     invoiceId: bigint
-    amount: any
+    amount: PrismaMoney
     method: string
     reference: string | null
     notes: string | null

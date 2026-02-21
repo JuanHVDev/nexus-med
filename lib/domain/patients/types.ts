@@ -159,3 +159,24 @@ export const ALLOWED_ROLES_FOR_DELETE = ["ADMIN"] as const
 export const ALLOWED_ROLES_FOR_RESTORE = ["ADMIN"] as const
 export const ALLOWED_ROLES_FOR_HISTORY = ["ADMIN", "DOCTOR", "NURSE"] as const
 export const ALLOWED_ROLES_FOR_CONTACTS = ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST"] as const
+
+export interface PatientNoteSimple {
+  id: string
+  clinicId: string
+  patientId: string
+  doctorId: string
+  appointmentId: string | null
+  specialty: string | null
+  type: string | null
+  chiefComplaint: string
+  currentIllness: string | null
+  vitalSigns: unknown
+  physicalExam: string | null
+  diagnosis: string | null
+  prognosis: string | null
+  treatment: string | null
+  notes: string | null
+  createdAt: Date
+  updatedAt: Date
+  doctor: { id: string; name: string; specialty: string | null }
+}

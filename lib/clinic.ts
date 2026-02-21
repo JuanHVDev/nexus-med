@@ -1,6 +1,7 @@
+import { cache } from 'react'
 import { prisma } from "@/lib/prisma"
 
-export async function getUserClinic(userId: string) {
+export const getUserClinic = cache(async (userId: string) => {
   const userClinic = await prisma.userClinic.findFirst({
     where: { userId },
     include: {
@@ -18,9 +19,9 @@ export async function getUserClinic(userId: string) {
     role: userClinic.role,
     clinic: userClinic.clinic,
   }
-}
+})
 
-export async function getUserClinicId(userId: string): Promise<bigint | null> {
+export const getUserClinicId = cache(async (userId: string): Promise<bigint | null> => {
   const userClinic = await prisma.userClinic.findFirst({
     where: { userId },
     select: { clinicId: true },
@@ -28,9 +29,9 @@ export async function getUserClinicId(userId: string): Promise<bigint | null> {
   })
   
   return userClinic?.clinicId ?? null
-}
+})
 
-export async function getUserRole(userId: string): Promise<string | null> {
+export const getUserRole = cache(async (userId: string): Promise<string | null> => {
   const userClinic = await prisma.userClinic.findFirst({
     where: { userId },
     select: { role: true },
@@ -38,4 +39,4 @@ export async function getUserRole(userId: string): Promise<string | null> {
   })
   
   return userClinic?.role ?? null
-}
+})

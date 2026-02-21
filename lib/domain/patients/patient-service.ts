@@ -11,6 +11,7 @@ import type {
   EmergencyContact,
   UpdateMedicalHistoryInput,
   CreateEmergencyContactInput,
+  PatientNoteSimple,
 } from "./types"
 
 export class PatientNotFoundError extends Error {
@@ -200,7 +201,7 @@ export const patientService = {
     await patientRepository.deleteEmergencyContact(contactId)
   },
 
-  async getPatientNotes(patientId: bigint, clinicId: bigint): Promise<any[]> {
+  async getPatientNotes(patientId: bigint, clinicId: bigint): Promise<PatientNoteSimple[]> {
     const patient = await patientRepository.findById(patientId, clinicId)
     if (!patient) throw new PatientNotFoundError()
 

@@ -11,14 +11,10 @@ interface OnboardingTourProps {
 }
 
 export function OnboardingTour({ userRole = 'DOCTOR' }: OnboardingTourProps) {
-  const [mounted, setMounted] = useState(false)
+  const [mounted] = useState(() => typeof window !== 'undefined')
   const { hasSeenTour, isTourOpen, setHasSeenTour, setIsTourOpen, setTourStep } =
     useOnboardingStore()
   const { theme } = useTheme()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleJoyrideCallback = useCallback(
     (data: CallBackProps) => {

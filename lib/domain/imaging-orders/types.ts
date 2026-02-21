@@ -41,7 +41,7 @@ export interface ImagingOrderListItem {
   doctor: ImagingOrderDoctor
 }
 
-export interface ImagingOrderDetail extends ImagingOrderListItem {}
+export type ImagingOrderDetail = ImagingOrderListItem
 
 export interface CreateImagingOrderInput {
   patientId: bigint

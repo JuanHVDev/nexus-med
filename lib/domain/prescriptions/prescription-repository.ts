@@ -9,7 +9,24 @@ import type {
   Medication,
 } from "./types"
 
-function mapPrescriptionToListItem(prescription: any): PrescriptionListItem {
+interface PrismaPrescription {
+  id: bigint
+  patientId: bigint
+  doctorId: string
+  medicalNoteId: bigint
+  medications: unknown
+  instructions: string | null
+  issueDate: Date
+  validUntil: Date | null
+  digitalSignature: string | null
+  createdAt: Date
+  updatedAt: Date
+  patient: { id: bigint; firstName: string; lastName: string; middleName: string | null; curp: string | null }
+  doctor: { id: string; name: string; specialty: string | null; licenseNumber: string | null }
+  medicalNote: { id: bigint; createdAt: Date }
+}
+
+function mapPrescriptionToListItem(prescription: PrismaPrescription): PrescriptionListItem {
   return {
     id: prescription.id.toString(),
     patientId: prescription.patientId.toString(),
@@ -159,7 +176,7 @@ export const prescriptionRepository = {
         patientId: data.patientId,
         doctorId,
         medicalNoteId: data.medicalNoteId,
-        medications: data.medications as any,
+        medications: data.medications as never,
         instructions: data.instructions,
         validUntil: data.validUntil,
       },
@@ -197,7 +214,7 @@ export const prescriptionRepository = {
     const prescription = await prisma.prescription.update({
       where: { id },
       data: {
-        medications: data.medications as any,
+        medications: data.medications as never,
         instructions: data.instructions,
         validUntil: data.validUntil,
         digitalSignature: data.digitalSignature,

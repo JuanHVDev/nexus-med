@@ -9,6 +9,8 @@ import { patientSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 
+type AllowedRole = (typeof ALLOWED_ROLES_FOR_CREATE)[number]
+
 export async function GET(request: Request) {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
@@ -41,7 +43,7 @@ export async function POST(request: Request) {
   if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
 
   const userRole = await getUserRole(session.user.id)
-  if (!userRole || !ALLOWED_ROLES_FOR_CREATE.includes(userRole as any)) {
+  if (!userRole || !ALLOWED_ROLES_FOR_CREATE.includes(userRole as AllowedRole)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 

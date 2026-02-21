@@ -5,9 +5,35 @@ import type {
   ImagingOrderFilters,
   CreateImagingOrderInput,
   UpdateImagingOrderInput,
+  OrderStatus,
 } from "./types"
 
-function mapImagingOrderToListItem(order: any): ImagingOrderListItem {
+interface PrismaImagingOrderResult {
+  id: bigint
+  clinicId: bigint
+  patientId: bigint
+  doctorId: string
+  medicalNoteId: bigint | null
+  orderDate: Date
+  studyType: string
+  bodyPart: string
+  reason: string | null
+  clinicalNotes: string | null
+  status: string
+  reportUrl: string | null
+  imagesUrl: string | null
+  reportFileName: string | null
+  imagesFileName: string | null
+  findings: string | null
+  impression: string | null
+  completedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  patient: { id: bigint; firstName: string; lastName: string; middleName: string | null; curp?: string | null; birthDate?: Date }
+  doctor: { id: string; name: string; specialty?: string | null; licenseNumber?: string | null }
+}
+
+function mapImagingOrderToListItem(order: PrismaImagingOrderResult): ImagingOrderListItem {
   return {
     id: order.id.toString(),
     clinicId: order.clinicId.toString(),
@@ -19,7 +45,7 @@ function mapImagingOrderToListItem(order: any): ImagingOrderListItem {
     bodyPart: order.bodyPart,
     reason: order.reason,
     clinicalNotes: order.clinicalNotes,
-    status: order.status,
+    status: order.status as OrderStatus,
     reportUrl: order.reportUrl,
     imagesUrl: order.imagesUrl,
     reportFileName: order.reportFileName,

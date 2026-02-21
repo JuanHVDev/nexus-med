@@ -146,7 +146,7 @@ describe("MedicalNoteService", () => {
 
   describe("create", () => {
     it("should create a new medical note", async () => {
-      vi.mocked(prisma.patient.findFirst).mockResolvedValue(mockPatient as any)
+      vi.mocked(prisma.patient.findFirst).mockResolvedValue(mockPatient as never)
       vi.mocked(medicalNoteRepository.findByAppointmentId).mockResolvedValue(null)
       vi.mocked(medicalNoteRepository.create).mockResolvedValue(mockNoteListItem)
 
@@ -186,7 +186,7 @@ describe("MedicalNoteService", () => {
     })
 
     it("should update existing note if appointment already has one", async () => {
-      vi.mocked(prisma.patient.findFirst).mockResolvedValue(mockPatient as any)
+      vi.mocked(prisma.patient.findFirst).mockResolvedValue(mockPatient as never)
       vi.mocked(medicalNoteRepository.findByAppointmentId).mockResolvedValue({ id: BigInt(10) })
       vi.mocked(medicalNoteRepository.update).mockResolvedValue(mockNoteListItem)
 
@@ -214,7 +214,7 @@ describe("MedicalNoteService", () => {
     })
 
     it("should set appointment status to IN_PROGRESS when creating note", async () => {
-      vi.mocked(prisma.patient.findFirst).mockResolvedValue(mockPatient as any)
+      vi.mocked(prisma.patient.findFirst).mockResolvedValue(mockPatient as never)
       vi.mocked(medicalNoteRepository.findByAppointmentId).mockResolvedValue(null)
       vi.mocked(medicalNoteRepository.create).mockResolvedValue(mockNoteListItem)
 
@@ -234,7 +234,7 @@ describe("MedicalNoteService", () => {
     })
 
     it("should not update appointment status when no appointmentId", async () => {
-      vi.mocked(prisma.patient.findFirst).mockResolvedValue(mockPatient as any)
+      vi.mocked(prisma.patient.findFirst).mockResolvedValue(mockPatient as never)
       vi.mocked(medicalNoteRepository.create).mockResolvedValue(mockNoteListItem)
 
       const input = {
@@ -267,7 +267,7 @@ describe("MedicalNoteService", () => {
         },
       }
 
-      vi.mocked(medicalNoteRepository.findById).mockResolvedValue(mockNoteWithAppointment as any)
+      vi.mocked(medicalNoteRepository.findById).mockResolvedValue(mockNoteWithAppointment as never)
       vi.mocked(medicalNoteRepository.update).mockResolvedValue(mockNoteListItem)
 
       const input = {
@@ -300,7 +300,7 @@ describe("MedicalNoteService", () => {
     })
 
     it("should parse vitalSigns string to object", async () => {
-      vi.mocked(medicalNoteRepository.findById).mockResolvedValue(mockNoteDetail as any)
+      vi.mocked(medicalNoteRepository.findById).mockResolvedValue(mockNoteDetail as never)
       vi.mocked(medicalNoteRepository.update).mockResolvedValue(mockNoteListItem)
 
       const input = {
@@ -318,7 +318,7 @@ describe("MedicalNoteService", () => {
     })
 
     it("should handle invalid vitalSigns JSON", async () => {
-      vi.mocked(medicalNoteRepository.findById).mockResolvedValue(mockNoteDetail as any)
+      vi.mocked(medicalNoteRepository.findById).mockResolvedValue(mockNoteDetail as never)
       vi.mocked(medicalNoteRepository.update).mockResolvedValue(mockNoteListItem)
 
       const input = {
@@ -336,7 +336,7 @@ describe("MedicalNoteService", () => {
     })
 
     it("should not update appointment status if no appointment", async () => {
-      vi.mocked(medicalNoteRepository.findById).mockResolvedValue(mockNoteDetail as any)
+      vi.mocked(medicalNoteRepository.findById).mockResolvedValue(mockNoteDetail as never)
       vi.mocked(medicalNoteRepository.update).mockResolvedValue(mockNoteListItem)
 
       const input = { diagnosis: "Nueva diagnóstico" }

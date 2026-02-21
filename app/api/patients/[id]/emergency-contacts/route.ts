@@ -9,6 +9,8 @@ import { emergencyContactSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 
+type AllowedRole = (typeof ALLOWED_ROLES_FOR_CONTACTS)[number]
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -48,7 +50,7 @@ export async function POST(
   if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
 
   const role = await getUserRole(session.user.id)
-  if (!role || !ALLOWED_ROLES_FOR_CONTACTS.includes(role as any)) {
+  if (!role || !ALLOWED_ROLES_FOR_CONTACTS.includes(role as AllowedRole)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 

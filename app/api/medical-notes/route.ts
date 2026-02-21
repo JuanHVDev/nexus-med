@@ -5,6 +5,8 @@ import { medicalNoteSchema } from "@/lib/validations/medical-note"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 
+type AllowedRole = (typeof ALLOWED_ROLES)[number]
+
 export async function GET(request: Request) {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
@@ -44,7 +46,7 @@ export async function POST(request: Request) {
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
   const userRole = await getUserRole(session.user.id)
-  if (!userRole || !ALLOWED_ROLES.includes(userRole as any)) {
+  if (!userRole || !ALLOWED_ROLES.includes(userRole as AllowedRole)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 

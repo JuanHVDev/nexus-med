@@ -182,7 +182,7 @@ describe("LabOrderService", () => {
           result: "95",
           unit: "mg/dL",
           referenceRange: "70-100",
-          flag: null as any,
+          flag: null as unknown,
           resultDate: new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
