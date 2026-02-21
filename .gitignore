@@ -53,6 +53,7 @@ PLAN.md
 playwright-report/
 test-results/
 .agent
+AGENT.md
 Plan_de_tests.md
 PLAN_DESIGN.md
 .vercel
