@@ -13,6 +13,7 @@ enum UserRole {
   DOCTOR
   NURSE
   RECEPTIONIST
+  PATIENT
 }
 
 enum InvitationStatus {
@@ -77,6 +78,12 @@ enum AuditAction {
   PDF_GENERATED
 }
 
+enum AppointmentRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ============ CORE MODELS ============
 
 model Clinic {
@@ -99,8 +106,9 @@ model Clinic {
   invoices          Invoice[]
   services          Service[]
   serviceCategories ServiceCategory[]
-  labOrders     LabOrder[]
-  imagingOrders ImagingOrder[]
+  labOrders         LabOrder[]
+  imagingOrders    ImagingOrder[]
+  appointmentRequests AppointmentRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -155,6 +163,8 @@ model User {
   emailVerified Boolean @default(false)
   image         String?
 
+  role          UserRole @default(PATIENT) // PATIENT for portal users
+
   specialty     String?
   licenseNumber String?
   phone         String?
@@ -170,12 +180,15 @@ model User {
   labOrders     LabOrder[]
   imagingOrders ImagingOrder[]
   auditLogs     AuditLog[]
+  
+  patient       Patient? // Portal patient links to their User account
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([email])
   @@index([isActive])
+  @@index([role])
   @@map("users")
 }
 
@@ -218,6 +231,10 @@ model Patient {
   labOrders         LabOrder[]
   imagingOrders    ImagingOrder[]
   invoices          Invoice[]
+  
+  user              User?     @relation(fields: [userId], references: [id])
+  userId            String?   @unique // Link to portal User account
+  appointmentRequests AppointmentRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -539,6 +556,9 @@ model LabOrder {
   resultsFileUrl  String?
   resultsFileName String?
 
+  // Liberación para portal del paciente
+  resultRelease   ResultRelease?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -602,6 +622,9 @@ model ImagingOrder {
 
   completedAt DateTime?
 
+  // Liberación para portal del paciente
+  resultRelease   ResultRelease?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -636,6 +659,54 @@ model AuditLog {
   @@index([createdAt])
   @@index([action])
   @@map("audit_logs")
+}
+
+// ============ AUDIT LOG ============
+
+model AppointmentRequest {
+  id               BigInt                    @id @default(autoincrement())
+  patientId        BigInt
+  patient          Patient                   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  clinicId         BigInt
+  clinic           Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  requestedDate    DateTime
+  requestedTime    String?
+  requestedDoctorId String?
+
+  reason           String?
+
+  status           AppointmentRequestStatus  @default(PENDING)
+
+  appointmentId    BigInt?
+
+  notes            String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([clinicId])
+  @@index([status])
+  @@map("appointment_requests")
+}
+
+model ResultRelease {
+  id            BigInt    @id @default(autoincrement())
+
+  labOrderId    BigInt?   @unique
+  labOrder      LabOrder? @relation(fields: [labOrderId], references: [id], onDelete: Cascade)
+
+  imagingOrderId BigInt?   @unique
+  imagingOrder  ImagingOrder? @relation(fields: [imagingOrderId], references: [id], onDelete: Cascade)
+
+  releasedAt    DateTime  @default(now())
+  releasedBy    String
+
+  @@index([labOrderId])
+  @@index([imagingOrderId])
+  @@map("result_releases")
 }
 
 // ============ BETTER-AUTH MODELS ============
