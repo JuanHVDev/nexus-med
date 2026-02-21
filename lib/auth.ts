@@ -24,6 +24,12 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
   },
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 10,
+    storage: "database",
+  },
 });
 
 export type SessionWithFields = typeof auth.$Infer.Session.session & {
