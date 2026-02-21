@@ -1,17 +1,13 @@
 import { auth } from "@/lib/auth"
 import { getUserClinicId, getUserRole } from "@/lib/clinic"
-import { prisma } from "@/lib/prisma"
+import {
+  patientService,
+  PatientNotFoundError,
+  ALLOWED_ROLES_FOR_CONTACTS,
+} from "@/lib/domain/patients"
 import { emergencyContactSchema } from "@/lib/validations/patient"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
-
-async function verifyPatientOwnership(patientId: string, clinicId: bigint) {
-  const patient = await prisma.patient.findFirst({
-    where: { id: BigInt(patientId), clinicId, deletedAt: null }
-  })
-  if (!patient) return null
-  return patient
-}
 
 export async function GET(
   request: Request,
@@ -25,19 +21,19 @@ export async function GET(
   if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
 
   const { id } = await params
-  const patient = await verifyPatientOwnership(id, clinicId)
-  if (!patient) return new NextResponse("Patient not found", { status: 404 })
 
-  const contacts = await prisma.emergencyContact.findMany({
-    where: { patientId: BigInt(id) },
-    orderBy: { isPrimary: 'desc' }
-  })
-
-  return NextResponse.json(contacts.map(c => ({
-    ...c,
-    id: c.id.toString(),
-    patientId: c.patientId.toString()
-  })))
+  try {
+    const contacts = await patientService.getEmergencyContacts(
+      BigInt(id),
+      BigInt(clinicId)
+    )
+    return NextResponse.json(contacts)
+  } catch (error) {
+    if (error instanceof PatientNotFoundError) {
+      return new NextResponse("Patient not found", { status: 404 })
+    }
+    throw error
+  }
 }
 
 export async function POST(
@@ -52,35 +48,25 @@ export async function POST(
   if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
 
   const role = await getUserRole(session.user.id)
-  const allowedRoles = ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST"]
-  if (!role || !allowedRoles.includes(role)) {
+  if (!role || !ALLOWED_ROLES_FOR_CONTACTS.includes(role as any)) {
     return new NextResponse("Forbidden", { status: 403 })
   }
 
   const { id } = await params
-  const patient = await verifyPatientOwnership(id, clinicId)
-  if (!patient) return new NextResponse("Patient not found", { status: 404 })
-
   const body = await request.json()
   const validated = emergencyContactSchema.parse(body)
 
-  if (validated.isPrimary) {
-    await prisma.emergencyContact.updateMany({
-      where: { patientId: BigInt(id), isPrimary: true },
-      data: { isPrimary: false }
-    })
-  }
-
-  const contact = await prisma.emergencyContact.create({
-    data: {
-      ...validated,
-      patientId: BigInt(id)
+  try {
+    const contact = await patientService.createEmergencyContact(
+      BigInt(id),
+      BigInt(clinicId),
+      validated
+    )
+    return NextResponse.json(contact, { status: 201 })
+  } catch (error) {
+    if (error instanceof PatientNotFoundError) {
+      return new NextResponse("Patient not found", { status: 404 })
     }
-  })
-
-  return NextResponse.json({
-    ...contact,
-    id: contact.id.toString(),
-    patientId: contact.patientId.toString()
-  }, { status: 201 })
+    throw error
+  }
 }

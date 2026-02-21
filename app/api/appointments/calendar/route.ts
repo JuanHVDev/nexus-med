@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth"
 import { getUserClinicId } from "@/lib/clinic"
-import { prisma } from "@/lib/prisma"
+import { appointmentService } from "@/lib/domain/appointments"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const start = searchParams.get("start")
   const end = searchParams.get("end")
-  const doctorId = searchParams.get("doctorId")
+  const doctorId = searchParams.get("doctorId") || undefined
 
   if (!start || !end) {
     return new NextResponse("Fechas de inicio y fin requeridas", { status: 400 })
@@ -21,84 +21,12 @@ export async function GET(request: Request) {
   const clinicId = await getUserClinicId(session.user.id)
   if (!clinicId) return new NextResponse("Clinic not found", { status: 403 })
 
-  const where: Record<string, unknown> = {
+  const events = await appointmentService.getCalendarEvents(
     clinicId,
-    startTime: {
-      gte: new Date(start),
-      lte: new Date(end)
-    }
-  }
-
-  if (doctorId) {
-    where.doctorId = doctorId
-  }
-
-  const appointments = await prisma.appointment.findMany({
-    where,
-    orderBy: { startTime: 'asc' },
-    include: {
-      patient: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          middleName: true,
-        }
-      },
-      doctor: {
-        select: {
-          id: true,
-          name: true,
-          specialty: true,
-        }
-      }
-    }
-  })
-
-  const events = appointments.map(apt => {
-    const patientName = `${apt.patient.firstName}${apt.patient.middleName ? ' ' + apt.patient.middleName : ''} ${apt.patient.lastName}`
-    const doctorName = apt.doctor.name
-    
-    let backgroundColor = "#3b82f6"
-    switch (apt.status) {
-      case "SCHEDULED":
-        backgroundColor = "#3b82f6"
-        break
-      case "CONFIRMED":
-        backgroundColor = "#10b981"
-        break
-      case "IN_PROGRESS":
-        backgroundColor = "#f59e0b"
-        break
-      case "COMPLETED":
-        backgroundColor = "#6b7280"
-        break
-      case "CANCELLED":
-        backgroundColor = "#ef4444"
-        break
-      case "NO_SHOW":
-        backgroundColor = "#dc2626"
-        break
-    }
-
-    return {
-      id: apt.id.toString(),
-      title: `${patientName} - Dr. ${doctorName}`,
-      start: apt.startTime.toISOString(),
-      end: apt.endTime.toISOString(),
-      resource: {
-        appointmentId: apt.id.toString(),
-        patientId: apt.patientId.toString(),
-        patientName,
-        doctorId: apt.doctorId,
-        doctorName,
-        status: apt.status,
-        reason: apt.reason,
-      },
-      backgroundColor,
-      borderColor: backgroundColor,
-    }
-  })
+    new Date(start),
+    new Date(end),
+    doctorId
+  )
 
   return NextResponse.json(events)
 }

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth"
 import { getUserClinicId, getUserRole } from "@/lib/clinic"
-import { prisma } from "@/lib/prisma"
+import { appointmentService } from "@/lib/domain/appointments"
 import { appointmentUpdateTransform } from "@/lib/validations/appointment"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
@@ -17,25 +17,7 @@ export async function GET(
   const clinicId = await getUserClinicId(session.user.id)
   if (!clinicId) return new NextResponse("Clinic not found", { status: 403 })
 
-  const appointment = await prisma.appointment.findFirst({
-    where: {
-      id: BigInt(id),
-      clinicId
-    },
-    include: {
-      patient: true,
-      doctor: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          specialty: true,
-          licenseNumber: true,
-        }
-      },
-      medicalNote: true
-    }
-  })
+  const appointment = await appointmentService.getById(BigInt(id), clinicId)
 
   if (!appointment) {
     return new NextResponse("Cita no encontrada", { status: 404 })
@@ -74,54 +56,26 @@ export async function PATCH(
   const body = await request.json()
   const validated = appointmentUpdateTransform.parse(body)
 
-  const existingAppointment = await prisma.appointment.findFirst({
-    where: {
-      id: BigInt(id),
-      clinicId
-    }
-  })
+  const result = await appointmentService.update(BigInt(id), clinicId, validated)
 
-  if (!existingAppointment) {
-    return new NextResponse("Cita no encontrada", { status: 404 })
+  if (!result.success) {
+    if (result.error.includes("no encontrada")) {
+      return new NextResponse(result.error, { status: 404 })
+    }
+    if (result.error.includes("hora de fin")) {
+      return new NextResponse(result.error, { status: 400 })
+    }
+    return new NextResponse(result.error, { status: 409 })
   }
-
-  if (validated.startTime && validated.endTime) {
-    if (validated.endTime <= validated.startTime) {
-      return new NextResponse("La hora de fin debe ser posterior a la hora de inicio", { status: 400 })
-    }
-  }
-
-  const appointment = await prisma.appointment.update({
-    where: { id: BigInt(id) },
-    data: validated,
-    include: {
-      patient: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          middleName: true,
-          phone: true,
-        }
-      },
-      doctor: {
-        select: {
-          id: true,
-          name: true,
-          specialty: true,
-        }
-      }
-    }
-  })
 
   return NextResponse.json({
-    ...appointment,
-    id: appointment.id.toString(),
-    clinicId: appointment.clinicId.toString(),
-    patientId: appointment.patientId.toString(),
+    ...result.appointment,
+    id: result.appointment.id.toString(),
+    clinicId: result.appointment.clinicId.toString(),
+    patientId: result.appointment.patientId.toString(),
     patient: {
-      ...appointment.patient,
-      id: appointment.patient.id.toString()
+      ...result.appointment.patient,
+      id: result.appointment.patient.id.toString()
     }
   })
 }
@@ -144,21 +98,11 @@ export async function DELETE(
     return new NextResponse("Forbidden", { status: 403 })
   }
 
-  const existingAppointment = await prisma.appointment.findFirst({
-    where: {
-      id: BigInt(id),
-      clinicId
-    }
-  })
+  const result = await appointmentService.cancel(BigInt(id), clinicId)
 
-  if (!existingAppointment) {
-    return new NextResponse("Cita no encontrada", { status: 404 })
+  if (!result.success) {
+    return new NextResponse(result.error, { status: 404 })
   }
-
-  await prisma.appointment.update({
-    where: { id: BigInt(id) },
-    data: { status: "CANCELLED" }
-  })
 
   return new NextResponse(null, { status: 204 })
 }

@@ -1,9 +1,9 @@
 import { auth } from '@/lib/auth'
 import { getUserClinicId } from '@/lib/clinic'
-import { prisma } from '@/lib/prisma'
+import { invoiceService } from '@/lib/domain/invoices'
+import { paymentSchema } from '@/lib/validations/invoice'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { paymentSchema } from '@/lib/validations/invoice'
 
 export async function POST(
   request: Request,
@@ -34,61 +34,29 @@ export async function POST(
       )
     }
 
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: BigInt(id),
-        clinicId: BigInt(clinicId),
-      },
-      include: {
-        payments: true,
-      },
-    })
-
-    if (!invoice) {
-      return NextResponse.json({ message: 'Invoice not found' }, { status: 404 })
-    }
-
-    if (invoice.status === 'CANCELLED') {
-      return NextResponse.json(
-        { message: 'No se puede pagar una factura cancelada' },
-        { status: 400 }
-      )
-    }
-
     const { amount, method, reference, notes } = validation.data
 
-    const totalPaid = invoice.payments.reduce((sum, pay) => sum + Number(pay.amount), 0)
-    const newTotalPaid = totalPaid + amount
+    const result = await invoiceService.addPayment(
+      BigInt(id),
+      clinicId,
+      {
+        amount,
+        method,
+        reference,
+        notes,
+      },
+      session.user.id
+    )
 
-    let invoiceStatus = invoice.status
-    if (newTotalPaid >= Number(invoice.total)) {
-      invoiceStatus = 'PAID'
-    } else if (newTotalPaid > 0) {
-      invoiceStatus = 'PARTIAL'
+    if (!result.success) {
+      return NextResponse.json({ message: result.error }, { status: 400 })
     }
 
-    const [payment] = await prisma.$transaction([
-      prisma.payment.create({
-        data: {
-          invoiceId: BigInt(id),
-          amount,
-          method,
-          reference,
-          notes,
-          paymentDate: new Date(),
-        },
-      }),
-      prisma.invoice.update({
-        where: { id: BigInt(id) },
-        data: { status: invoiceStatus },
-      }),
-    ])
-
+    const payment = result.payment
     return NextResponse.json({
       ...payment,
       id: payment.id.toString(),
       invoiceId: payment.invoiceId.toString(),
-      amount: Number(payment.amount),
       paymentDate: payment.paymentDate.toISOString(),
     }, { status: 201 })
   } catch (error) {

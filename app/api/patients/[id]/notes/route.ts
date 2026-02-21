@@ -1,6 +1,9 @@
 import { auth } from "@/lib/auth"
 import { getUserClinicId } from "@/lib/clinic"
-import { prisma } from "@/lib/prisma"
+import {
+  patientService,
+  PatientNotFoundError,
+} from "@/lib/domain/patients"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 
@@ -11,61 +14,24 @@ export async function GET(
   const { id } = await params
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
-  
-  if (!session) {
-    return new NextResponse("Unauthorized", { status: 401 })
-  }
+  if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
   const clinicId = await getUserClinicId(session.user.id)
-  if (!clinicId) {
-    return new NextResponse("No clinic assigned", { status: 403 })
-  }
+  if (!clinicId) return new NextResponse("No clinic assigned", { status: 403 })
 
-  const patient = await prisma.patient.findFirst({
-    where: { id: BigInt(id), clinicId, deletedAt: null }
-  })
-  
-  if (!patient) {
-    return new NextResponse("Patient not found", { status: 404 })
-  }
-
-  const notes = await prisma.medicalNote.findMany({
-    where: {
-      patientId: BigInt(id),
-      clinicId
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    include: {
-      doctor: {
-        select: {
-          id: true,
-          name: true,
-          specialty: true,
-        }
-      }
+  try {
+    const notes = await patientService.getPatientNotes(BigInt(id), BigInt(clinicId))
+    return NextResponse.json(
+      notes.map((note) => ({
+        ...note,
+        createdAt: note.createdAt.toISOString(),
+        updatedAt: note.updatedAt.toISOString(),
+      }))
+    )
+  } catch (error) {
+    if (error instanceof PatientNotFoundError) {
+      return new NextResponse("Patient not found", { status: 404 })
     }
-  })
-
-  return NextResponse.json(notes.map(note => ({
-    id: note.id.toString(),
-    clinicId: note.clinicId.toString(),
-    patientId: note.patientId.toString(),
-    doctorId: note.doctorId,
-    appointmentId: note.appointmentId?.toString() || null,
-    specialty: note.specialty,
-    type: note.type,
-    chiefComplaint: note.chiefComplaint,
-    currentIllness: note.currentIllness,
-    vitalSigns: note.vitalSigns,
-    physicalExam: note.physicalExam,
-    diagnosis: note.diagnosis,
-    prognosis: note.prognosis,
-    treatment: note.treatment,
-    notes: note.notes,
-    createdAt: note.createdAt.toISOString(),
-    updatedAt: note.updatedAt.toISOString(),
-    doctor: note.doctor
-  })))
+    throw error
+  }
 }

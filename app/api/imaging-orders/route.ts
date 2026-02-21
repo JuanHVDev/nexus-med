@@ -1,181 +1,106 @@
-import { auth } from '@/lib/auth'
-import { getUserClinicId, getUserRole } from '@/lib/clinic'
-import { prisma } from '@/lib/prisma'
-import { headers } from 'next/headers'
-import { NextResponse } from 'next/server'
-import { imagingOrderCreateSchema } from '@/lib/validations/imaging-order'
+import { auth } from "@/lib/auth"
+import { getUserClinicId, getUserRole } from "@/lib/clinic"
+import {
+  imagingOrderService,
+  PatientNotFoundError,
+} from "@/lib/domain/imaging-orders"
+import { imagingOrderCreateSchema } from "@/lib/validations/imaging-order"
+import { NextResponse } from "next/server"
+import { headers } from "next/headers"
 
 export async function GET(request: Request) {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    })
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user?.id) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
 
-    const clinicId = await getUserClinicId(session.user.id)
-    if (!clinicId) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
 
-    const { searchParams } = new URL(request.url)
-    const patientId = searchParams.get('patientId')
-    const status = searchParams.get('status')
-    const doctorId = searchParams.get('doctorId')
-    const studyType = searchParams.get('studyType')
-    const medicalNoteId = searchParams.get('medicalNoteId')
-    const fromDate = searchParams.get('fromDate')
-    const toDate = searchParams.get('toDate')
+  const { searchParams } = new URL(request.url)
+  const patientId = searchParams.get("patientId") ?? undefined
+  const doctorId = searchParams.get("doctorId") ?? undefined
+  const medicalNoteId = searchParams.get("medicalNoteId") ?? undefined
+  const studyType = searchParams.get("studyType") ?? undefined
+  const status = searchParams.get("status") as "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | undefined
+  const fromDate = searchParams.get("fromDate") ? new Date(searchParams.get("fromDate")!) : undefined
+  const toDate = searchParams.get("toDate") ? new Date(searchParams.get("toDate")!) : undefined
 
-    const where: Record<string, unknown> = {
-      clinicId: BigInt(clinicId),
-    }
+  const filters = { patientId, doctorId, medicalNoteId, studyType, status, fromDate, toDate }
 
-    if (patientId) where.patientId = BigInt(patientId)
-    if (status) where.status = status
-    if (doctorId) where.doctorId = doctorId
-    if (studyType) where.studyType = studyType
-    if (medicalNoteId) where.medicalNoteId = BigInt(medicalNoteId)
-    
-    if (fromDate || toDate) {
-      where.orderDate = {}
-      if (fromDate) (where.orderDate as Record<string, Date>).gte = new Date(fromDate)
-      if (toDate) (where.orderDate as Record<string, Date>).lte = new Date(toDate)
-    }
+  const imagingOrders = await imagingOrderService.listByClinic(BigInt(clinicId), filters)
 
-    const imagingOrders = await prisma.imagingOrder.findMany({
-      where,
-      include: {
-        patient: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            middleName: true,
-          }
-        },
-        doctor: {
-          select: {
-            id: true,
-            name: true,
-          }
-        },
-      },
-      orderBy: {
-        orderDate: 'desc',
-      },
-    })
-
-    return NextResponse.json(imagingOrders.map(order => ({
+  return NextResponse.json(
+    imagingOrders.map((order) => ({
       ...order,
-      id: order.id.toString(),
-      clinicId: order.clinicId.toString(),
-      patientId: order.patientId.toString(),
-      doctorId: order.doctorId,
-      medicalNoteId: order.medicalNoteId?.toString() ?? null,
-      patient: order.patient ? {
-        ...order.patient,
-        id: order.patient.id.toString(),
-      } : null,
       orderDate: order.orderDate.toISOString(),
       completedAt: order.completedAt?.toISOString() ?? null,
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
-    })))
-  } catch (error) {
-    console.error('Error fetching imaging orders:', error)
-    return NextResponse.json({ message: 'Error fetching imaging orders' }, { status: 500 })
-  }
+    }))
+  )
 }
 
 export async function POST(request: Request) {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user?.id) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  const clinicId = await getUserClinicId(session.user.id)
+  if (!clinicId) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  const allowedRoles = ["ADMIN", "DOCTOR"]
+  const role = await getUserRole(session.user.id)
+  if (!allowedRoles.includes(role ?? "")) {
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 })
+  }
+
+  const body = await request.json()
+  const validation = imagingOrderCreateSchema.safeParse(body)
+
+  if (!validation.success) {
+    return NextResponse.json(
+      { message: "Validation error", errors: validation.error.flatten().fieldErrors },
+      { status: 400 }
+    )
+  }
+
+  const { patientId, doctorId, medicalNoteId, studyType, bodyPart, reason, clinicalNotes } = validation.data
+
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    })
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-
-    const clinicId = await getUserClinicId(session.user.id)
-    const role = await getUserRole(session.user.id)
-    if (!clinicId) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-
-    const allowedRoles = ['ADMIN', 'DOCTOR']
-    if (!allowedRoles.includes(role ?? '')) {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
-    }
-
-    const body = await request.json()
-    const validation = imagingOrderCreateSchema.safeParse(body)
-
-    if (!validation.success) {
-      return NextResponse.json(
-        { message: 'Validation error', errors: validation.error.flatten().fieldErrors },
-        { status: 400 }
-      )
-    }
-
-    const { patientId, doctorId, medicalNoteId, studyType, bodyPart, reason, clinicalNotes } = validation.data
-
-    const patient = await prisma.patient.findFirst({
-      where: { id: BigInt(patientId), clinicId: BigInt(clinicId), deletedAt: null }
-    })
-    if (!patient) {
-      return NextResponse.json({ message: 'Patient not found' }, { status: 404 })
-    }
-
-    const imagingOrder = await prisma.imagingOrder.create({
-      data: {
-        clinicId: BigInt(clinicId),
+    const imagingOrder = await imagingOrderService.create(
+      BigInt(clinicId),
+      {
         patientId: BigInt(patientId),
-        doctorId: doctorId,
-        medicalNoteId: medicalNoteId ? BigInt(medicalNoteId) : null,
+        doctorId,
+        medicalNoteId: medicalNoteId ? BigInt(medicalNoteId) : undefined,
         studyType,
         bodyPart,
-        reason: reason ?? null,
-        clinicalNotes: clinicalNotes ?? null,
+        reason: reason ?? undefined,
+        clinicalNotes: clinicalNotes ?? undefined,
       },
-      include: {
-        patient: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            middleName: true,
-          }
-        },
-        doctor: {
-          select: {
-            id: true,
-            name: true,
-          }
-        },
-      },
-    })
+      session.user.id
+    )
 
-    return NextResponse.json({
-      ...imagingOrder,
-      id: imagingOrder.id.toString(),
-      clinicId: imagingOrder.clinicId.toString(),
-      patientId: imagingOrder.patientId.toString(),
-      doctorId: imagingOrder.doctorId,
-      medicalNoteId: imagingOrder.medicalNoteId?.toString() ?? null,
-      patient: imagingOrder.patient ? {
-        ...imagingOrder.patient,
-        id: imagingOrder.patient.id.toString(),
-      } : null,
-      orderDate: imagingOrder.orderDate.toISOString(),
-      createdAt: imagingOrder.createdAt.toISOString(),
-      updatedAt: imagingOrder.updatedAt.toISOString(),
-    }, { status: 201 })
+    return NextResponse.json(
+      {
+        ...imagingOrder,
+        orderDate: imagingOrder.orderDate.toISOString(),
+        completedAt: imagingOrder.completedAt?.toISOString() ?? null,
+        createdAt: imagingOrder.createdAt.toISOString(),
+        updatedAt: imagingOrder.updatedAt.toISOString(),
+      },
+      { status: 201 }
+    )
   } catch (error) {
-    console.error('Error creating imaging order:', error)
-    return NextResponse.json({ message: 'Error creating imaging order' }, { status: 500 })
+    if (error instanceof PatientNotFoundError) {
+      return NextResponse.json({ message: "Patient not found" }, { status: 404 })
+    }
+    throw error
   }
 }

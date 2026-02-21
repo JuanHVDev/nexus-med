@@ -1,10 +1,9 @@
 import { auth } from '@/lib/auth'
 import { getUserClinicId } from '@/lib/clinic'
-import { prisma } from '@/lib/prisma'
+import { invoiceService } from '@/lib/domain/invoices'
+import { invoiceUpdateSchema } from '@/lib/validations/invoice'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { invoiceUpdateSchema } from '@/lib/validations/invoice'
-import { logAudit } from '@/lib/audit'
 
 export async function GET(
   request: Request,
@@ -30,41 +29,15 @@ export async function GET(
       return NextResponse.json({ message: 'Invalid invoice ID' }, { status: 400 })
     }
 
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: BigInt(id),
-        clinicId: BigInt(clinicId),
-      },
-      include: {
-        patient: true,
-        issuedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        },
-        items: true,
-        payments: {
-          orderBy: { paymentDate: 'desc' },
-        },
-      },
-    })
+    const invoice = await invoiceService.getById(BigInt(id), clinicId, session.user.id)
 
     if (!invoice) {
       return NextResponse.json({ message: 'Invoice not found' }, { status: 404 })
     }
 
-    await logAudit(session.user.id, {
-      action: 'READ',
-      entityType: 'Invoice',
-      entityId: id,
-      entityName: `Factura #${invoice.clinicInvoiceNumber}`,
-    })
+    const totals = invoiceService.calculateTotals(invoice)
 
-    const totalPaid = invoice.payments.reduce((sum, pay) => sum + Number(pay.amount), 0)
-
-    const serializedInvoice = {
+    return NextResponse.json({
       id: invoice.id.toString(),
       clinicId: invoice.clinicId.toString(),
       patientId: invoice.patientId.toString(),
@@ -72,10 +45,10 @@ export async function GET(
       issuedById: invoice.issuedById,
       issueDate: invoice.issueDate.toISOString(),
       dueDate: invoice.dueDate?.toISOString() ?? null,
-      subtotal: Number(invoice.subtotal),
-      tax: Number(invoice.tax),
-      discount: Number(invoice.discount),
-      total: Number(invoice.total),
+      subtotal: invoice.subtotal,
+      tax: invoice.tax,
+      discount: invoice.discount,
+      total: invoice.total,
       status: invoice.status,
       notes: invoice.notes,
       patient: {
@@ -96,24 +69,22 @@ export async function GET(
         serviceId: item.serviceId?.toString() ?? null,
         description: item.description,
         quantity: item.quantity,
-        unitPrice: Number(item.unitPrice),
-        discount: Number(item.discount),
-        total: Number(item.total),
+        unitPrice: item.unitPrice,
+        discount: item.discount,
+        total: item.total,
       })),
       payments: invoice.payments.map(pay => ({
         id: pay.id.toString(),
         invoiceId: pay.invoiceId.toString(),
-        amount: Number(pay.amount),
+        amount: pay.amount,
         method: pay.method,
         reference: pay.reference,
         notes: pay.notes,
         paymentDate: pay.paymentDate.toISOString(),
       })),
-      totalPaid,
-      balance: Number(invoice.total) - totalPaid,
-    }
-
-    return NextResponse.json(serializedInvoice)
+      totalPaid: totals.totalPaid,
+      balance: totals.balance,
+    })
   } catch (error) {
     console.error('Error fetching invoice:', error)
     return NextResponse.json({ message: 'Error fetching invoice' }, { status: 500 })
@@ -153,54 +124,19 @@ export async function PUT(
       )
     }
 
-    const existing = await prisma.invoice.findFirst({
-      where: {
-        id: BigInt(id),
-        clinicId: BigInt(clinicId),
-      },
-    })
-
-    if (!existing) {
-      return NextResponse.json({ message: 'Invoice not found' }, { status: 404 })
-    }
-
     const { status, dueDate, notes } = validation.data
 
-    const updateData: Record<string, unknown> = {}
-    if (status) updateData.status = status
-    if (dueDate) updateData.dueDate = new Date(dueDate)
-    if (notes !== undefined) updateData.notes = notes
+    const result = await invoiceService.update(BigInt(id), clinicId, {
+      status,
+      dueDate: dueDate ? new Date(dueDate) : undefined,
+      notes,
+    }, session.user.id)
 
-    const invoice = await prisma.invoice.update({
-      where: { id: BigInt(id) },
-      data: updateData,
-      include: {
-        patient: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            middleName: true,
-          }
-        },
-        issuedBy: {
-          select: {
-            id: true,
-            name: true,
-          }
-        },
-        items: true,
-        payments: true,
-      },
-    })
+    if (!result.success) {
+      return NextResponse.json({ message: result.error }, { status: 404 })
+    }
 
-    await logAudit(session.user.id, {
-      action: 'UPDATE',
-      entityType: 'Invoice',
-      entityId: id,
-      entityName: `Factura #${invoice.clinicInvoiceNumber}`,
-    })
-
+    const invoice = result.invoice
     return NextResponse.json({
       id: invoice.id.toString(),
       clinicId: invoice.clinicId.toString(),
@@ -209,10 +145,10 @@ export async function PUT(
       issuedById: invoice.issuedById,
       issueDate: invoice.issueDate.toISOString(),
       dueDate: invoice.dueDate?.toISOString() ?? null,
-      subtotal: Number(invoice.subtotal),
-      tax: Number(invoice.tax),
-      discount: Number(invoice.discount),
-      total: Number(invoice.total),
+      subtotal: invoice.subtotal,
+      tax: invoice.tax,
+      discount: invoice.discount,
+      total: invoice.total,
       status: invoice.status,
       notes: invoice.notes,
       patient: {
@@ -228,14 +164,14 @@ export async function PUT(
         serviceId: item.serviceId?.toString() ?? null,
         description: item.description,
         quantity: item.quantity,
-        unitPrice: Number(item.unitPrice),
-        discount: Number(item.discount),
-        total: Number(item.total),
+        unitPrice: item.unitPrice,
+        discount: item.discount,
+        total: item.total,
       })),
       payments: invoice.payments.map(pay => ({
         id: pay.id.toString(),
         invoiceId: pay.invoiceId.toString(),
-        amount: Number(pay.amount),
+        amount: pay.amount,
         method: pay.method,
         reference: pay.reference,
         notes: pay.notes,
@@ -272,44 +208,11 @@ export async function DELETE(
       return NextResponse.json({ message: 'Invalid invoice ID' }, { status: 400 })
     }
 
-    const existing = await prisma.invoice.findFirst({
-      where: {
-        id: BigInt(id),
-        clinicId: BigInt(clinicId),
-      },
-      include: {
-        payments: true,
-      },
-    })
+    const result = await invoiceService.delete(BigInt(id), clinicId, session.user.id)
 
-    if (!existing) {
-      return NextResponse.json({ message: 'Invoice not found' }, { status: 404 })
+    if (!result.success) {
+      return NextResponse.json({ message: result.error }, { status: 400 })
     }
-
-    if (existing.payments.length > 0) {
-      return NextResponse.json(
-        { message: 'No se puede eliminar una factura con pagos registrados' },
-        { status: 400 }
-      )
-    }
-
-    if (existing.status === 'PAID') {
-      return NextResponse.json(
-        { message: 'No se puede eliminar una factura pagada' },
-        { status: 400 }
-      )
-    }
-
-    await prisma.invoice.delete({
-      where: { id: BigInt(id) },
-    })
-
-    await logAudit(session.user.id, {
-      action: 'DELETE',
-      entityType: 'Invoice',
-      entityId: id,
-      entityName: `Factura #${existing.clinicInvoiceNumber}`,
-    })
 
     return NextResponse.json({ message: 'Invoice deleted' })
   } catch (error) {
