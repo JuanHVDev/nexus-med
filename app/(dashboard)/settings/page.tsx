@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Building2, Users, UserCog, Clock } from 'lucide-react'
+import { Building2, Users, UserCog, Clock, UserCircle, FlaskConical } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const settingsSections = [
@@ -30,6 +30,18 @@ const settingsSections = [
     description: 'Horarios de atención de la clínica',
     href: '/settings/hours',
     icon: Clock,
+  },
+  {
+    title: 'Pacientes Portal',
+    description: 'Aprobar registros de pacientes',
+    href: '/settings/portal-patients',
+    icon: UserCircle,
+  },
+  {
+    title: 'Liberar Resultados',
+    description: 'Liberar resultados al portal del paciente',
+    href: '/settings/portal-results',
+    icon: FlaskConical,
   },
 ]
 
