@@ -94,8 +94,8 @@ export default function RegisterPage() {
       if (!response.ok) {
         toast.error(result.error || 'Error al registrarse')
       } else {
-        toast.success('¡Cuenta creada exitosamente! Por favor inicia sesión.')
-        router.push('/login')
+        toast.success('¡Cuenta creada! Revisa tu correo para verificar tu cuenta.')
+        router.push(`/verify-email-sent?email=${encodeURIComponent(data.email)}`)
       }
     } catch {
       toast.error('Error inesperado al registrarse')

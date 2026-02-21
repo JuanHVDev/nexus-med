@@ -1,5 +1,10 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
+import {
+  getCachedDashboardStats,
+  setCachedDashboardStats,
+} from '@/lib/cache'
+import { isRedisConfigured } from '@/lib/redis'
 
 interface DashboardStats {
   totalPatients: number
@@ -9,7 +14,7 @@ interface DashboardStats {
   pendingAppointments: number
 }
 
-export const getDashboardStats = cache(async (clinicId: bigint): Promise<DashboardStats> => {
+async function fetchDashboardStatsFromDB(clinicId: bigint): Promise<DashboardStats> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -64,4 +69,21 @@ export const getDashboardStats = cache(async (clinicId: bigint): Promise<Dashboa
     monthlyRevenue: monthlyRevenue._sum.total ? BigInt(monthlyRevenue._sum.total.toString()) : BigInt(0),
     pendingAppointments
   }
+}
+
+export const getDashboardStats = cache(async (clinicId: bigint): Promise<DashboardStats> => {
+  if (isRedisConfigured()) {
+    const cached = await getCachedDashboardStats(clinicId)
+    if (cached) {
+      return cached
+    }
+  }
+
+  const stats = await fetchDashboardStatsFromDB(clinicId)
+
+  if (isRedisConfigured()) {
+    await setCachedDashboardStats(clinicId, stats)
+  }
+
+  return stats
 })
