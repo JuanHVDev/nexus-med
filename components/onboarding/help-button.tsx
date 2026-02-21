@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { HelpCircle, X, Play, BookOpen, MessageCircle, ChevronRight } from 'lucide-react'
+import { HelpCircle, Play, BookOpen, MessageCircle, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,7 +17,7 @@ import { useOnboardingStore } from '@/lib/onboarding/store'
 export function HelpButton() {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
-  const { startTour, resetTour } = useOnboardingStore()
+  const { resetTour } = useOnboardingStore()
 
   const handleStartTour = () => {
     setIsOpen(false)
