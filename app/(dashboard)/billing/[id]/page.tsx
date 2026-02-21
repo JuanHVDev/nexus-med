@@ -46,7 +46,7 @@ import {
   FileCheck
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { generateInvoicePDF } from '@/components/billing/invoice-pdf'
+import { getInvoicePDFGenerator } from '@/lib/dynamic-imports'
 
 interface InvoiceItem {
   id: string
@@ -146,6 +146,7 @@ export default function InvoiceDetailPage() {
     
     try {
       setDownloadingPdf(true)
+      const generateInvoicePDF = await getInvoicePDFGenerator()
       const blob = await generateInvoicePDF(invoice)
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')

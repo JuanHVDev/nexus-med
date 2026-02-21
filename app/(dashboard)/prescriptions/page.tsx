@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/pagination'
 import { Badge } from '@/components/ui/badge'
 import { Search, FileText, ChevronRight, Download } from 'lucide-react'
-import { generatePrescriptionPDF } from '@/components/prescriptions/prescription-pdf'
+import { getPrescriptionPDFGenerator } from '@/lib/dynamic-imports'
 import { toast } from 'sonner'
 
 interface Medication {
@@ -162,6 +162,7 @@ export default function PrescriptionsPage() {
                         size="sm"
                         onClick={async () => {
                           try {
+                            const generatePrescriptionPDF = await getPrescriptionPDFGenerator()
                             const pdfBlob = await generatePrescriptionPDF({
                               id: prescription.id,
                               issueDate: prescription.createdAt,

@@ -23,8 +23,7 @@ import {
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import { generateFinancialReportPDF } from "@/components/reports/financial-report-pdf"
-import { exportToExcel } from "@/lib/reports/excel-export"
+import { getFinancialReportPDFGenerator, getExcelExporter } from "@/lib/dynamic-imports"
 
 interface Doctor {
   id: string
@@ -147,6 +146,7 @@ export default function FinancialReportPage() {
         },
       }
       
+      const generateFinancialReportPDF = await getFinancialReportPDFGenerator()
       const blob = await generateFinancialReportPDF(pdfData)
       const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
@@ -166,7 +166,7 @@ export default function FinancialReportPage() {
     }
   }, [data, filters])
 
-  const handleExportExcel = useCallback(() => {
+  const handleExportExcel = useCallback(async () => {
     if (!data) return
     
     try {
@@ -183,6 +183,7 @@ export default function FinancialReportPage() {
         Estado: getStatusLabel(inv.status),
       }))
       
+      const { exportToExcel } = await getExcelExporter()
       exportToExcel(excelData, `reporte-financiero-${format(new Date(), "yyyy-MM-dd")}`)
       toast.success("Excel exportado correctamente")
     } catch (error) {

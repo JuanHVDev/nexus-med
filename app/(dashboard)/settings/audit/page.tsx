@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
@@ -37,7 +38,19 @@ import {
 } from 'lucide-react'
 import { AUDIT_ACTION_LABELS, ENTITY_TYPE_LABELS, type AuditAction, type EntityType } from '@/lib/audit/types'
 import { AuditTimeline } from './components/audit-timeline'
-import { AuditExportPDF } from './components/audit-export-pdf'
+
+const AuditExportPDF = dynamic(
+  () => import('./components/audit-export-pdf').then(mod => ({ default: mod.AuditExportPDF })),
+  {
+    ssr: false,
+    loading: () => (
+      <Button variant="outline" disabled>
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        Cargando...
+      </Button>
+    ),
+  }
+)
 
 interface AuditLog {
   id: string

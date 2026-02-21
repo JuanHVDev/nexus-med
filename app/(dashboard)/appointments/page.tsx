@@ -1,8 +1,8 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { AppointmentCalendar } from '@/components/appointments/appointment-calendar'
 import { AppointmentList } from '@/components/appointments/appointment-list'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AppointmentForm } from '@/components/appointments/appointment-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { SlotInfo } from 'react-big-calendar'
 import { Plus } from 'lucide-react'
 import type { AppointmentInputFormData } from '@/lib/validations/appointment'
+import { Loader2 } from 'lucide-react'
 
 interface CalendarEvent {
   id: string
@@ -29,6 +29,28 @@ interface CalendarEvent {
     reason?: string
   }
 }
+
+interface SlotInfo {
+  start: Date
+  end: Date
+  slots: Date[]
+  action: 'select' | 'click' | 'doubleClick'
+}
+
+const AppointmentCalendar = dynamic(
+  () => import('@/components/appointments/appointment-calendar').then(mod => ({ default: mod.AppointmentCalendar })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[600px] w-full rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+          <p className="mt-2 text-sm text-muted-foreground">Cargando calendario...</p>
+        </div>
+      </div>
+    ),
+  }
+)
 
 function AppointmentsContent() {
   const router = useRouter()
@@ -134,7 +156,7 @@ function AppointmentsContent() {
         </TabsContent>
         
         <TabsContent value="list" className="mt-4">
-          <AppointmentList
+          <AppointmentList 
             appointments={appointments}
           />
         </TabsContent>

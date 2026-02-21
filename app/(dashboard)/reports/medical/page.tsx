@@ -26,8 +26,7 @@ import {
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import { generateMedicalReportPDF } from "@/components/reports/medical-report-pdf"
-import { exportToExcel } from "@/lib/reports/excel-export"
+import { getMedicalReportPDFGenerator, getExcelExporter } from "@/lib/dynamic-imports"
 
 interface Doctor {
   id: string
@@ -137,6 +136,7 @@ export default function MedicalReportPage() {
         },
       }
       
+      const generateMedicalReportPDF = await getMedicalReportPDFGenerator()
       const blob = await generateMedicalReportPDF(pdfData)
       const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
@@ -156,7 +156,7 @@ export default function MedicalReportPage() {
     }
   }, [data, filters])
 
-  const handleExportExcel = useCallback(() => {
+  const handleExportExcel = useCallback(async () => {
     if (!data) return
     
     try {
@@ -175,6 +175,7 @@ export default function MedicalReportPage() {
         "Ordenes Imagen": c.imagingOrdersCount,
       }))
       
+      const { exportToExcel } = await getExcelExporter()
       exportToExcel(excelData, `reporte-consultas-${format(new Date(), "yyyy-MM-dd")}`)
       toast.success("Excel exportado correctamente")
     } catch (error) {
