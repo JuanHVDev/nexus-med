@@ -45,7 +45,8 @@ import {
   Loader2,
   FileText,
   X,
-  Upload
+  Upload,
+  Printer
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { FileUpload } from '@/components/ui/file-upload'
@@ -505,30 +506,89 @@ export default function LabOrdersPage() {
                     </TableCell>
                     <TableCell className="text-right">
                        <div className="flex items-center justify-end gap-2">
-                         {order.resultsFileUrl ? (
-                           <Button
-                             variant="ghost"
-                             size="sm"
-                             asChild
-                           >
-                             <a href={order.resultsFileUrl} target="_blank" rel="noopener noreferrer">
-                               <FileText className="h-4 w-4 mr-1" />
-                               Ver PDF
-                             </a>
-                           </Button>
-                         ) : (
-                           <Button
-                             variant="ghost"
-                             size="sm"
-                             onClick={() => {
-                               setUploadingOrderId(order.id)
-                               setUploadDialogOpen(true)
-                             }}
-                           >
-                             <Upload className="h-4 w-4 mr-1" />
-                             Subir
-                           </Button>
-                         )}
+                          {order.resultsFileUrl ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              asChild
+                            >
+                              <a href={order.resultsFileUrl} target="_blank" rel="noopener noreferrer">
+                                <FileText className="h-4 w-4 mr-1" />
+                                Ver PDF
+                              </a>
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setUploadingOrderId(order.id)
+                                setUploadDialogOpen(true)
+                              }}
+                            >
+                              <Upload className="h-4 w-4 mr-1" />
+                              Subir
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const printWindow = window.open('', '_blank')
+                              if (printWindow) {
+                                printWindow.document.write(`
+                                  <html>
+                                    <head>
+                                      <title>Orden de Laboratorio</title>
+                                      <style>
+                                        body { font-family: Arial, sans-serif; padding: 20px; }
+                                        h1 { font-size: 18px; margin-bottom: 5px; }
+                                        .info { margin-bottom: 20px; }
+                                        .info p { margin: 5px 0; }
+                                        table { width: 100%; border-collapse: collapse; }
+                                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                                        th { background-color: #f5f5f5; }
+                                        .tests { margin-top: 20px; }
+                                        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <h1>Orden de Laboratorio</h1>
+                                      <div class="info">
+                                        <p><strong>Fecha:</strong> ${new Date(order.orderDate).toLocaleDateString('es-MX')}</p>
+                                        <p><strong>Paciente:</strong> ${order.patient?.firstName} ${order.patient?.lastName}</p>
+                                        <p><strong>Médico:</strong> ${order.doctor?.name}</p>
+                                        ${order.instructions ? `<p><strong>Instrucciones:</strong> ${order.instructions}</p>` : ''}
+                                      </div>
+                                      <div class="tests">
+                                        <h2>Estudios Solicitados</h2>
+                                        <table>
+                                          <tr>
+                                            <th>Estudio</th>
+                                            <th>Código</th>
+                                          </tr>
+                                          ${order.tests.map(t => `
+                                            <tr>
+                                              <td>${t.name}</td>
+                                              <td>${t.code || ''}</td>
+                                            </tr>
+                                          `).join('')}
+                                        </table>
+                                      </div>
+                                      <div class="footer">
+                                        <p>Orden generada por HC Gestor</p>
+                                      </div>
+                                      <script>window.print()</script>
+                                    </body>
+                                  </html>
+                                `)
+                                printWindow.document.close()
+                              }
+                            }}
+                          >
+                            <Printer className="h-4 w-4 mr-1" />
+                            Imprimir
+                          </Button>
                          {order.status !== 'COMPLETED' && (
                            <Button
                              variant="ghost"

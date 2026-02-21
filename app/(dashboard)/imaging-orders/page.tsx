@@ -47,7 +47,8 @@ import {
   X,
   Upload,
   FileText,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Printer
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { STUDY_TYPES } from '@/lib/validations/imaging-order'
@@ -506,25 +507,70 @@ export default function ImagingOrdersPage() {
                              <Upload className="h-4 w-4" />
                            </Button>
                          )}
-                         {order.imagesUrl ? (
-                           <Button variant="ghost" size="sm" asChild>
-                             <a href={order.imagesUrl} target="_blank" rel="noopener noreferrer">
-                               <ImageIcon className="h-4 w-4" />
-                             </a>
-                           </Button>
-                         ) : (
-                           <Button
-                             variant="ghost"
-                             size="sm"
-                             onClick={() => {
-                               setUploadingOrder(order)
-                               setUploadType('images')
-                               setUploadDialogOpen(true)
-                             }}
-                           >
-                             <ImageIcon className="h-4 w-4 opacity-50" />
-                           </Button>
-                         )}
+                          {order.imagesUrl ? (
+                            <Button variant="ghost" size="sm" asChild>
+                              <a href={order.imagesUrl} target="_blank" rel="noopener noreferrer">
+                                <ImageIcon className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setUploadingOrder(order)
+                                setUploadType('images')
+                                setUploadDialogOpen(true)
+                              }}
+                            >
+                              <ImageIcon className="h-4 w-4 opacity-50" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const printWindow = window.open('', '_blank')
+                              if (printWindow) {
+                                printWindow.document.write(`
+                                  <html>
+                                    <head>
+                                      <title>Orden de Imagenología</title>
+                                      <style>
+                                        body { font-family: Arial, sans-serif; padding: 20px; }
+                                        h1 { font-size: 18px; margin-bottom: 5px; }
+                                        .info { margin-bottom: 20px; }
+                                        .info p { margin: 5px 0; }
+                                        table { width: 100%; border-collapse: collapse; }
+                                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                                        th { background-color: #f5f5f5; }
+                                        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <h1>Orden de Imagenología</h1>
+                                      <div class="info">
+                                        <p><strong>Fecha:</strong> ${new Date(order.orderDate).toLocaleDateString('es-MX')}</p>
+                                        <p><strong>Paciente:</strong> ${order.patient?.firstName} ${order.patient?.lastName}</p>
+                                        <p><strong>Médico:</strong> ${order.doctor?.name}</p>
+                                        <p><strong>Tipo de Estudio:</strong> ${order.studyType}</p>
+                                        <p><strong>Región Corporal:</strong> ${order.bodyPart}</p>
+                                        ${order.reason ? `<p><strong>Motivo:</strong> ${order.reason}</p>` : ''}
+                                        ${order.clinicalNotes ? `<p><strong>Notas Clínicas:</strong> ${order.clinicalNotes}</p>` : ''}
+                                      </div>
+                                      <div class="footer">
+                                        <p>Orden generada por HC Gestor</p>
+                                      </div>
+                                      <script>window.print()</script>
+                                    </body>
+                                  </html>
+                                `)
+                                printWindow.document.close()
+                              }
+                            }}
+                          >
+                            <Printer className="h-4 w-4" />
+                          </Button>
                          <Button
                            variant="ghost"
                            size="icon"
