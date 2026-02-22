@@ -1,13 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import type { 
-  InvoiceFilter, 
   InvoiceWithRelations, 
   InvoiceRepository,
-  CreateInvoiceDTO,
-  UpdateInvoiceDTO,
-  CreatePaymentDTO,
-  InvoiceTotals,
-  PaymentWithInvoice,
   InvoiceStatus,
   PaymentMethod
 } from "./types"

@@ -1,11 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import type { 
-  AppointmentFilter, 
   AppointmentWithRelations, 
   AppointmentRepository,
-  CreateAppointmentDTO,
-  UpdateAppointmentDTO,
-  ConflictCheckInput,
   AppointmentStatus
 } from "./types"
 

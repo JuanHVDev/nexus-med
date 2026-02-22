@@ -65,7 +65,7 @@ export default function PortalRegisterPage() {
       setTimeout(() => {
         router.push('/patient-portal/login')
       }, 2000)
-    } catch (err) {
+    } catch {
       setError('Error de conexión')
     } finally {
       setLoading(false)

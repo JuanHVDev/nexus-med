@@ -1,4 +1,4 @@
-import type { AppointmentStatus, ConflictCheckInput, AppointmentWithRelations } from "./types"
+import type { AppointmentStatus, AppointmentWithRelations } from "./types"
 
 const EXCLUDED_STATUSES_FOR_CONFLICT: AppointmentStatus[] = ["CANCELLED", "NO_SHOW"]
 

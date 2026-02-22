@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Calendar, Activity, Shield, Users, Clock, CheckCircle2, Stethoscope, FileText } from "lucide-react";
+import { ArrowRight, Calendar, Activity, Shield, Users, CheckCircle2, Stethoscope, FileText } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";

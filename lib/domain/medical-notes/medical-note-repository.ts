@@ -1,13 +1,9 @@
 import { prisma } from "@/lib/prisma"
-import type { Specialty, noteTypeEnum } from "@/lib/validations/medical-note"
+import type { Specialty } from "@/lib/validations/medical-note"
 import type {
   MedicalNoteRepository,
   MedicalNoteListItem,
   MedicalNoteDetail,
-  MedicalNoteFilters,
-  MedicalNoteListResult,
-  CreateMedicalNoteInput,
-  UpdateMedicalNoteInput,
   VitalSigns,
   NoteType,
 } from "./types"

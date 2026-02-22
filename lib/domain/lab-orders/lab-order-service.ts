@@ -8,7 +8,6 @@ import type {
   UpdateLabOrderInput,
   LabResultItem,
   CreateLabResultInput,
-  OrderStatus,
 } from "./types"
 
 export class PatientNotFoundError extends Error {

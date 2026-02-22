@@ -37,7 +37,7 @@ export default function PortalLoginPage() {
 
       router.push('/patient-portal')
       router.refresh()
-    } catch (err) {
+    } catch {
       setError('Error de conexión')
     } finally {
       setLoading(false)

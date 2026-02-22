@@ -1,5 +1,5 @@
 import { render } from '@react-email/render'
-import { resend, EMAIL_FROM, APP_URL } from './index'
+import { resend, EMAIL_FROM } from './index'
 import { VerificationEmail } from '@/emails/verification-email'
 
 interface SendVerificationParams {

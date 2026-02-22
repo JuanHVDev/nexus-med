@@ -1,27 +1,19 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
+import { useCallback, useEffect } from 'react'
 import Joyride, { CallBackProps, STATUS, EVENTS } from 'react-joyride'
 import { useOnboardingStore } from '@/lib/onboarding/store'
 import { getStepsForRole } from '@/lib/onboarding/steps'
 import { useTheme } from 'next-themes'
-
-const JoyrideNoSSR = dynamic(() => import('react-joyride').then(mod => mod.default), { ssr: false })
 
 interface OnboardingTourProps {
   userRole?: string
 }
 
 export function OnboardingTour({ userRole = 'DOCTOR' }: OnboardingTourProps) {
-  const [mounted, setMounted] = useState(false)
   const { hasSeenTour, isTourOpen, setHasSeenTour, setIsTourOpen, setTourStep } =
     useOnboardingStore()
   const { theme } = useTheme()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleJoyrideCallback = useCallback(
     (data: CallBackProps) => {
@@ -47,10 +39,6 @@ export function OnboardingTour({ userRole = 'DOCTOR' }: OnboardingTourProps) {
       return () => clearTimeout(timer)
     }
   }, [hasSeenTour, isTourOpen, setIsTourOpen])
-
-  if (!mounted) {
-    return null
-  }
 
   if (hasSeenTour && !isTourOpen) {
     return null

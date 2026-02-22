@@ -4,9 +4,6 @@
  * reducing the initial bundle size by ~300KB
  */
 
-// Type for PDF generation functions
-type PDFGenerator<T> = (data: T) => Promise<Blob>
-
 /**
  * Lazy load the medical report PDF generator
  */

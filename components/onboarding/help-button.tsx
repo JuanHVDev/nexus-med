@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use } from 'react'
 import { useRouter } from 'next/navigation'
 import { HelpCircle, Play, BookOpen, MessageCircle, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,14 +15,9 @@ import {
 import { useOnboardingStore } from '@/lib/onboarding/store'
 
 export function HelpButton() {
-  const [mounted, setMounted] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = use(() => [false])
   const router = useRouter()
   const { resetTour } = useOnboardingStore()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleStartTour = () => {
     setIsOpen(false)
@@ -54,10 +49,6 @@ export function HelpButton() {
       action: () => window.open('mailto:soporte@hc-gestor.com', '_blank'),
     },
   ]
-
-  if (!mounted) {
-    return null
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

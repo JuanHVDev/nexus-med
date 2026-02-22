@@ -56,7 +56,7 @@ export const medicalNoteService = {
     clinicId: bigint,
     doctorId: string,
     data: CreateMedicalNoteInput,
-    userId: string
+    _userId: string
   ): Promise<MedicalNoteListItem> {
     const patient = await prisma.patient.findFirst({
       where: {

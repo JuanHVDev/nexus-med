@@ -4,18 +4,17 @@ import type {
   AppointmentStatus,
   CalendarEvent,
   CreateAppointmentDTO,
-  UpdateAppointmentDTO,
-  STATUS_COLORS
+  UpdateAppointmentDTO
 } from "./types"
 import { appointmentRepository } from "./appointment-repository"
-import { hasTimeConflict, isValidTimeSlot, buildConflictMessage } from "./conflict-validator"
+import { isValidTimeSlot, buildConflictMessage } from "./conflict-validator"
 import { STATUS_COLORS as statusColors } from "./types"
 
 export class AppointmentService {
   async create(
     data: CreateAppointmentDTO,
     clinicId: bigint,
-    userId: string
+    _userId: string
   ): Promise<{ success: true; appointment: AppointmentWithRelations } | { success: false; error: string }> {
     if (!isValidTimeSlot(data.startTime, data.endTime)) {
       return { success: false, error: "La hora de fin debe ser posterior a la hora de inicio" }

@@ -1,4 +1,4 @@
-import { Specialty, noteTypeEnum, VitalSignsData } from "@/lib/validations/medical-note"
+import { Specialty, noteTypeEnum } from "@/lib/validations/medical-note"
 
 export type NoteType = (typeof noteTypeEnum)[number]
 

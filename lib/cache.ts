@@ -1,6 +1,5 @@
 import { cache } from "react"
 import {
-  redis,
   getCached,
   setCached,
   deleteCached,

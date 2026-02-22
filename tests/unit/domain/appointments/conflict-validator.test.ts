@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { hasTimeConflict, isValidTimeSlot, shouldCheckForConflicts } from '@/lib/domain/appointments/conflict-validator'
-import type { AppointmentStatus, AppointmentWithRelations } from '@/lib/domain/appointments/types'
 
 describe('conflict-validator', () => {
   describe('isValidTimeSlot', () => {

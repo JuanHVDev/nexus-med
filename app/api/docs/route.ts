@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import swaggerUi from "swagger-ui-express"
 import { openApiDocument } from "@/lib/openapi/document"
 
 export const dynamic = "force-dynamic"

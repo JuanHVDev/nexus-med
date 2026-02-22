@@ -1,4 +1,4 @@
-import type { Appointment, Patient, User } from "@/generated/prisma/client"
+
 
 export type AppointmentStatus = 
   | "SCHEDULED"
