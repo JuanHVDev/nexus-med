@@ -13,28 +13,33 @@ const prisma = new PrismaClient({
   adapter,
 });
 
+const getSecondaryStorage = () => {
+  if (!isRedisConfigured() || !redis) return undefined
+  const client = redis
+  
+  return {
+    get: async (key: string) => {
+      const value = await client.get<string>(key);
+      return value ?? null;
+    },
+    set: async (key: string, value: string, ttl?: number) => {
+      if (ttl) {
+        await client.set(key, value, { ex: ttl });
+      } else {
+        await client.set(key, value);
+      }
+    },
+    delete: async (key: string) => {
+      await client.del(key);
+    },
+  }
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  secondaryStorage: isRedisConfigured()
-    ? {
-        get: async (key) => {
-          const value = await redis.get<string>(key);
-          return value ?? null;
-        },
-        set: async (key, value, ttl) => {
-          if (ttl) {
-            await redis.set(key, value, { ex: ttl });
-          } else {
-            await redis.set(key, value);
-          }
-        },
-        delete: async (key) => {
-          await redis.del(key);
-        },
-      }
-    : undefined,
+  secondaryStorage: getSecondaryStorage(),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
