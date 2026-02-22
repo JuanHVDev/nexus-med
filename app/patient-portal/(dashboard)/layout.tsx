@@ -3,7 +3,7 @@ import { getPortalSession } from '@/lib/portal/auth'
 import { PortalNav } from '@/components/portal/portal-nav'
 import { MobilePortalNav } from '@/components/portal/portal-nav'
 
-export default async function PortalLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode

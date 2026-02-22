@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { format } from 'date-fns'
 import { AppointmentList } from '@/components/appointments/appointment-list'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -93,8 +94,8 @@ function AppointmentsContent() {
 
   const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
     setSelectedSlot({
-      start: slotInfo.start.toISOString().slice(0, 16),
-      end: slotInfo.end.toISOString().slice(0, 16),
+      start: format(slotInfo.start, "yyyy-MM-dd'T'HH:mm"),
+      end: format(slotInfo.end, "yyyy-MM-dd'T'HH:mm"),
     })
     setDialogOpen(true)
   }, [])

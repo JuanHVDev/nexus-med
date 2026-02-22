@@ -1,30 +1,37 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Joyride, { CallBackProps, STATUS, EVENTS } from 'react-joyride'
 import { useOnboardingStore } from '@/lib/onboarding/store'
 import { getStepsForRole } from '@/lib/onboarding/steps'
 import { useTheme } from 'next-themes'
+
+const JoyrideNoSSR = dynamic(() => import('react-joyride').then(mod => mod.default), { ssr: false })
 
 interface OnboardingTourProps {
   userRole?: string
 }
 
 export function OnboardingTour({ userRole = 'DOCTOR' }: OnboardingTourProps) {
-  const [mounted] = useState(() => typeof window !== 'undefined')
+  const [mounted, setMounted] = useState(false)
   const { hasSeenTour, isTourOpen, setHasSeenTour, setIsTourOpen, setTourStep } =
     useOnboardingStore()
   const { theme } = useTheme()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleJoyrideCallback = useCallback(
     (data: CallBackProps) => {
       const { status, type, index } = data
 
-      if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+      if (type === ('TOOLTIP' as unknown as typeof EVENTS).STEP_AFTER || type === ('TOOLTIP' as unknown as typeof EVENTS).TARGET_NOT_FOUND) {
         setTourStep(index + 1)
       }
 
-      if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      if (status === ('finished' as unknown as typeof STATUS).FINISHED || status === ('skipped' as unknown as typeof STATUS).SKIPPED) {
         setIsTourOpen(false)
         setHasSeenTour(true)
       }
