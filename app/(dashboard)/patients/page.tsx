@@ -1,4 +1,11 @@
-import { PatientList } from '@/components/patients/patient-list'
+import type { Metadata } from "next";
+import { PatientList } from '@/components/patients/patient-list';
+
+export const metadata: Metadata = {
+  title: "Pacientes",
+  description: "Gestiona los pacientes de tu clínica. Busca, edita y visualiza historiales médicos.",
+};
+
 export default function PatientsPage()
 {
   return (

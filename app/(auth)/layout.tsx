@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Autenticación",
+  description: "Inicia sesión o regístrate en HC Gestor",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default function AuthLayout({ children }: { children: React.ReactNode })
 {
   return (
