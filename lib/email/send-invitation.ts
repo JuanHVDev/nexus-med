@@ -17,6 +17,11 @@ export async function sendInvitationEmail({
   role,
   invitedByName,
 }: SendInvitationParams) {
+  if (!resend) {
+    console.warn('Resend not configured, skipping email send')
+    return { id: 'mock-id' }
+  }
+
   const invitationUrl = `${APP_URL}/invitations/${token}`
 
   const html = await render(

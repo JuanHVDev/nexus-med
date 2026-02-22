@@ -13,6 +13,11 @@ export async function sendVerificationEmail({
   name,
   verificationUrl,
 }: SendVerificationParams) {
+  if (!resend) {
+    console.warn('Resend not configured, skipping email send')
+    return { id: 'mock-id' }
+  }
+
   const html = await render(
     VerificationEmail({
       verificationUrl,

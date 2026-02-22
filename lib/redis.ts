@@ -1,9 +1,17 @@
 import { Redis } from "@upstash/redis"
 
-export const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+const getRedisClient = () => {
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  
+  if (!url || !token) {
+    return null
+  }
+  
+  return new Redis({ url, token })
+}
+
+export const redis = getRedisClient()
 
 export const CACHE_PREFIXES = {
   SESSION: "session:",
@@ -23,6 +31,7 @@ export const CACHE_TTL = {
 export async function getCached<T>(
   key: string
 ): Promise<T | null> {
+  if (!redis) return null
   try {
     const cached = await redis.get<T>(key)
     return cached
@@ -37,6 +46,7 @@ export async function setCached(
   value: unknown,
   ttl: number
 ): Promise<boolean> {
+  if (!redis) return false
   try {
     await redis.set(key, JSON.stringify(value), { ex: ttl })
     return true
@@ -47,6 +57,7 @@ export async function setCached(
 }
 
 export async function deleteCached(key: string): Promise<boolean> {
+  if (!redis) return false
   try {
     await redis.del(key)
     return true
@@ -57,6 +68,7 @@ export async function deleteCached(key: string): Promise<boolean> {
 }
 
 export async function deleteCachedByPattern(pattern: string): Promise<number> {
+  if (!redis) return 0
   try {
     const keys = await redis.keys(pattern)
     if (keys.length === 0) return 0
@@ -96,5 +108,5 @@ export function withCache<T extends (...args: unknown[]) => Promise<unknown>>(
 }
 
 export function isRedisConfigured(): boolean {
-  return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  return redis !== null
 }
